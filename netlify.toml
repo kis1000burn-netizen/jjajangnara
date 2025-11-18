@@ -1,0 +1,24 @@
+# Netlify 배포 설정 파일
+
+[build]
+  # 빌드 명령어 (정적 사이트이므로 불필요)
+  # publish = "."
+  
+# 헤더 설정 (선택사항)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# 리다이렉트 설정 (필요시)
+# [[redirects]]
+#   from = "/*"
+#   to = "/index.html"
+#   status = 200
+
+
+
+

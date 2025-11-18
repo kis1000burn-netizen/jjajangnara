@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>주문하기 - 짜장나라 세종본점</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="짜장나라 세종본점 주문하기" />
+  
+  <style>
+    :root {
+      --bg-dark: #111111;
+      --bg-section: #181818;
+      --accent-gold: #d9a441;
+      --accent-gold-soft: #f3d28a;
+      --text-main: #f8f5ee;
+      --text-sub: #c9c4b7;
+      --max-width: 1120px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding-top: 80px;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      max-width: 100%;
+      display: block;
+    }
+
+    /* 헤더 */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 50;
+      backdrop-filter: blur(12px);
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0.55));
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .nav-inner {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+    }
+
+    .back-btn {
+      padding: 0.5rem 1rem;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.5);
+      color: var(--text-main);
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 메인 컨테이너 */
+    .order-container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 2rem 1.2rem;
+    }
+
+    .page-title {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      text-align: center;
+    }
+
+    /* 주문 섹션 레이아웃 */
+    .order-layout {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 2rem;
+    }
+
+    /* 메뉴 선택 섹션 */
+    .menu-selection {
+      background: var(--bg-section);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .section-title {
+      font-size: 1.3rem;
+      margin-bottom: 1.5rem;
+      color: var(--accent-gold-soft);
+    }
+
+    .menu-list {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      background: #1f1f1f;
+      border-radius: 0.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    .menu-item:hover {
+      border-color: var(--accent-gold);
+      background: #252525;
+    }
+
+    .menu-item-info {
+      flex: 1;
+    }
+
+    .menu-item-name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+
+    .menu-item-price {
+      font-size: 0.9rem;
+      color: var(--accent-gold-soft);
+    }
+
+    .menu-item-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .quantity-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      background: rgba(0, 0, 0, 0.5);
+      color: var(--text-main);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    .quantity-btn:hover {
+      background: var(--accent-gold);
+      color: #111;
+      border-color: var(--accent-gold);
+    }
+
+    .quantity-display {
+      min-width: 40px;
+      text-align: center;
+      font-weight: 600;
+    }
+
+    /* 주문 정보 섹션 */
+    .order-info {
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .info-card {
+      background: var(--bg-section);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: var(--text-sub);
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      background: #1f1f1f;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.5rem;
+      color: var(--text-main);
+      font-size: 0.9rem;
+      font-family: inherit;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--accent-gold);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    /* 장바구니 */
+    .cart-summary {
+      background: var(--bg-section);
+      border-radius: 1rem;
+      padding: 1.5rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      position: sticky;
+      top: 100px;
+    }
+
+    .cart-items {
+      margin-bottom: 1.5rem;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.75rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .cart-item:last-child {
+      border-bottom: none;
+    }
+
+    .cart-item-name {
+      font-size: 0.9rem;
+    }
+
+    .cart-item-details {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.85rem;
+      color: var(--text-sub);
+    }
+
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 1rem 0;
+      border-top: 2px solid var(--accent-gold);
+      margin-top: 1rem;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .checkout-btn {
+      width: 100%;
+      padding: 1rem;
+      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-soft));
+      color: #111;
+      border: none;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      margin-top: 1rem;
+    }
+
+    .checkout-btn:hover {
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    .checkout-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .empty-cart {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-sub);
+    }
+
+    @media (max-width: 900px) {
+      .order-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .cart-summary {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding-top: 70px;
+      }
+
+      .order-container {
+        padding: 1rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+      }
+
+      .menu-selection,
+      .info-card,
+      .cart-summary {
+        padding: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 헤더 -->
+  <header>
+    <div class="nav-inner">
+      <div class="brand">
+        <a href="index.html">짜장나라 세종본점</a>
+      </div>
+      <a href="index.html" class="back-btn">← 메인으로</a>
+    </div>
+  </header>
+
+  <!-- 주문 컨테이너 -->
+  <div class="order-container">
+    <h1 class="page-title">주문하기</h1>
+
+    <div class="order-layout">
+      <!-- 왼쪽: 메뉴 선택 및 주문 정보 -->
+      <div>
+        <!-- 메뉴 선택 -->
+        <div class="menu-selection">
+          <h2 class="section-title">메뉴 선택</h2>
+          <div class="menu-list" id="menuList">
+            <!-- 메뉴 항목들이 여기에 동적으로 추가됩니다 -->
+          </div>
+        </div>
+
+        <!-- 배달 정보 -->
+        <div class="info-card" style="margin-top: 1.5rem;">
+          <h2 class="section-title">배달 정보</h2>
+          <div class="form-group">
+            <label for="deliveryAddress">배달 주소 *</label>
+            <input type="text" id="deliveryAddress" placeholder="배달받을 주소를 입력해주세요" required />
+          </div>
+          <div class="form-group">
+            <label for="deliveryPhone">연락처 *</label>
+            <input type="tel" id="deliveryPhone" placeholder="010-1234-5678" required />
+          </div>
+          <div class="form-group">
+            <label for="deliveryName">받는 분 이름</label>
+            <input type="text" id="deliveryName" placeholder="이름을 입력해주세요" />
+          </div>
+        </div>
+
+        <!-- 요청사항 -->
+        <div class="info-card" style="margin-top: 1.5rem;">
+          <h2 class="section-title">요청사항</h2>
+          <div class="form-group">
+            <label for="specialRequest">특별 요청사항</label>
+            <textarea id="specialRequest" placeholder="배달 시 요청사항을 입력해주세요 (예: 문 앞에 놓아주세요)"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- 오른쪽: 장바구니 -->
+      <div class="order-info">
+        <div class="cart-summary">
+          <h2 class="section-title">장바구니</h2>
+          <div class="cart-items" id="cartItems">
+            <div class="empty-cart">장바구니가 비어있습니다</div>
+          </div>
+          <div class="cart-total">
+            <span>총 금액</span>
+            <span id="totalPrice">0원</span>
+          </div>
+          <button class="checkout-btn" id="checkoutBtn" disabled>결제하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // 메뉴 데이터 수정 영역
+    // ============================================
+    // 아래 배열에서 메뉴 이름과 가격을 수정하실 수 있습니다.
+    // price 값만 숫자로 입력하시면 됩니다. (예: 8000 = 8,000원)
+    // ============================================
+    const menuData = [
+      { id: 1, name: "짜장면", price: 8000 },
+      { id: 2, name: "짬뽕", price: 8000 },
+      { id: 3, name: "짬짜면", price: 9000 },
+      { id: 4, name: "미니탕수육", price: 11000 },
+      { id: 5, name: "탕수육(중)", price: 16000 },
+      { id: 6, name: "짬뽕밥", price: 10000 },
+      { id: 7, name: "볶음밥", price: 10000 },
+      { id: 8, name: "잡채밥", price: 12000 },
+      { id: 9, name: "마파두부밥", price: 10000 },
+      { id: 10, name: "제육덮밥", price: 11000 },
+      { id: 11, name: "중화비빔밥", price: 9000 },
+      { id: 12, name: "짜장밥", price: 10000 },
+      { id: 13, name: "혼밥세트", price: 16000 },
+      { id: 14, name: "달달커플세트", price: 22000 },
+      { id: 15, name: "패밀리세트", price: 31000 }
+    ];
+    // ============================================
+    // 메뉴 데이터 수정 영역 끝
+    // ============================================
+
+    // 장바구니 데이터
+    let cart = [];
+
+    // 메뉴 목록 렌더링
+    function renderMenuList() {
+      const menuList = document.getElementById("menuList");
+      menuList.innerHTML = menuData.map(menu => `
+        <div class="menu-item">
+          <div class="menu-item-info">
+            <div class="menu-item-name">${menu.name}</div>
+            <div class="menu-item-price">${menu.price.toLocaleString()}원</div>
+          </div>
+          <div class="menu-item-controls">
+            <button class="quantity-btn" onclick="decreaseQuantity(${menu.id})">-</button>
+            <span class="quantity-display" id="qty-${menu.id}">0</span>
+            <button class="quantity-btn" onclick="increaseQuantity(${menu.id})">+</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    // 수량 증가
+    function increaseQuantity(menuId) {
+      const menu = menuData.find(m => m.id === menuId);
+      const cartItem = cart.find(item => item.id === menuId);
+
+      if (cartItem) {
+        cartItem.quantity++;
+      } else {
+        cart.push({ ...menu, quantity: 1 });
+      }
+
+      updateCart();
+      updateQuantityDisplay(menuId);
+    }
+
+    // 수량 감소
+    function decreaseQuantity(menuId) {
+      const cartItem = cart.find(item => item.id === menuId);
+      if (cartItem) {
+        cartItem.quantity--;
+        if (cartItem.quantity <= 0) {
+          cart = cart.filter(item => item.id !== menuId);
+        }
+      }
+      updateCart();
+      updateQuantityDisplay(menuId);
+    }
+
+    // 수량 표시 업데이트
+    function updateQuantityDisplay(menuId) {
+      const cartItem = cart.find(item => item.id === menuId);
+      const qtyElement = document.getElementById(`qty-${menuId}`);
+      if (qtyElement) {
+        qtyElement.textContent = cartItem ? cartItem.quantity : 0;
+      }
+    }
+
+    // 장바구니 업데이트
+    function updateCart() {
+      const cartItems = document.getElementById("cartItems");
+      const totalPrice = document.getElementById("totalPrice");
+      const checkoutBtn = document.getElementById("checkoutBtn");
+
+      if (cart.length === 0) {
+        cartItems.innerHTML = '<div class="empty-cart">장바구니가 비어있습니다</div>';
+        totalPrice.textContent = "0원";
+        checkoutBtn.disabled = true;
+        return;
+      }
+
+      cartItems.innerHTML = cart.map(item => `
+        <div class="cart-item">
+          <div>
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-details">
+              <span>${item.price.toLocaleString()}원 × ${item.quantity}</span>
+            </div>
+          </div>
+          <div style="font-weight: 600;">
+            ${(item.price * item.quantity).toLocaleString()}원
+          </div>
+        </div>
+      `).join("");
+
+      const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      totalPrice.textContent = `${total.toLocaleString()}원`;
+      checkoutBtn.disabled = false;
+    }
+
+    // 결제하기
+    function checkout() {
+      const address = document.getElementById("deliveryAddress").value;
+      const phone = document.getElementById("deliveryPhone").value;
+      const name = document.getElementById("deliveryName").value;
+      const request = document.getElementById("specialRequest").value;
+
+      if (!address || !phone) {
+        alert("배달 주소와 연락처를 입력해주세요.");
+        return;
+      }
+
+      if (cart.length === 0) {
+        alert("장바구니가 비어있습니다.");
+        return;
+      }
+
+      // 주문 정보 구성
+      const orderInfo = {
+        items: cart,
+        delivery: {
+          address,
+          phone,
+          name: name || "미입력",
+          request: request || "없음"
+        },
+        total: cart.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+        date: new Date().toISOString()
+      };
+
+      // 주문 정보를 로컬 스토리지에 저장 (실제로는 서버로 전송)
+      localStorage.setItem("lastOrder", JSON.stringify(orderInfo));
+
+      // 결제 페이지로 이동 (실제 결제 연동 시 수정 필요)
+      alert(`주문이 완료되었습니다!\n\n총 금액: ${orderInfo.total.toLocaleString()}원\n\n실제 결제 연동은 PG사(토스페이먼츠, 아임포트 등)와 연동이 필요합니다.`);
+      
+      // 실제 결제 연동 예시:
+      // window.location.href = "payment.html";
+    }
+
+    // 결제 버튼 이벤트
+    document.getElementById("checkoutBtn").addEventListener("click", checkout);
+
+    // 초기화
+    renderMenuList();
+    updateCart();
+  </script>
+</body>
+</html>
+
