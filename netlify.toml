@@ -11,7 +11,14 @@
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
+    Referrer-Policy = "no-referrer-when-downgrade"
+
+# Daum 검증 파일 접근 허용
+[[headers]]
+  for = "/daum-verification.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "public, max-age=3600"
 
 # 리다이렉트 설정 (필요시)
 # [[redirects]]

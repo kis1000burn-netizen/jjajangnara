@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+
+# Daum Webmaster Tool 크롤러 허용
+User-agent: Daumoa
+Allow: /
+
+User-agent: Yeti
+Allow: /
+
+# Daum Webmaster Tool 인증키
+#DaumWebMasterTool:be1b71220b42da3bd42620ee60f6ddd1ef4add160573109e93798c28a0817a03:O+1qiBzWmFt+sFCap3SkYQ==
+
+Sitemap: https://짜장나라.com/sitemap.xml
+
+

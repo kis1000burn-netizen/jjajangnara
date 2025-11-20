@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>짜장나라 상표 출원 정보</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Malgun Gothic', sans-serif;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+      color: #e0e0e0;
+      line-height: 1.6;
+      padding: 2rem;
+      min-height: 100vh;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 1rem;
+      padding: 3rem;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+    
+    h1 {
+      color: #d9a441;
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      text-align: center;
+    }
+    
+    .subtitle {
+      text-align: center;
+      color: #b0b0b0;
+      margin-bottom: 3rem;
+      font-size: 0.95rem;
+    }
+    
+    .section {
+      margin-bottom: 2.5rem;
+    }
+    
+    .section-title {
+      color: #d9a441;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid rgba(217, 164, 65, 0.3);
+    }
+    
+    .info-grid {
+      display: grid;
+      gap: 1rem;
+    }
+    
+    .info-item {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 1.2rem;
+      border-radius: 0.5rem;
+      border-left: 3px solid #d9a441;
+    }
+    
+    .info-label {
+      color: #d9a441;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+    }
+    
+    .info-value {
+      color: #e0e0e0;
+      font-size: 1rem;
+    }
+    
+    .table-container {
+      overflow-x: auto;
+      margin-top: 1rem;
+    }
+    
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 0.5rem;
+      overflow: hidden;
+    }
+    
+    th {
+      background: rgba(217, 164, 65, 0.2);
+      color: #d9a441;
+      padding: 1rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    
+    td {
+      padding: 1rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #e0e0e0;
+    }
+    
+    .code {
+      font-family: 'Courier New', monospace;
+      color: #d9a441;
+      font-weight: 600;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 3rem;
+      padding-top: 2rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      color: #b0b0b0;
+      font-size: 0.9rem;
+    }
+    
+    @media (max-width: 768px) {
+      body {
+        padding: 1rem;
+      }
+      
+      .container {
+        padding: 1.5rem;
+      }
+      
+      h1 {
+        font-size: 1.5rem;
+      }
+      
+      .section-title {
+        font-size: 1.1rem;
+      }
+      
+      .info-item {
+        padding: 1rem;
+      }
+      
+      .info-label {
+        font-size: 0.85rem;
+      }
+      
+      .info-value {
+        font-size: 0.95rem;
+      }
+      
+      table {
+        font-size: 0.85rem;
+      }
+      
+      th, td {
+        padding: 0.75rem 0.5rem;
+      }
+      
+      .code {
+        font-size: 0.9rem;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      body {
+        padding: 0.75rem;
+      }
+      
+      .container {
+        padding: 1rem;
+      }
+      
+      h1 {
+        font-size: 1.3rem;
+      }
+      
+      .subtitle {
+        font-size: 0.85rem;
+      }
+      
+      .section {
+        margin-bottom: 2rem;
+      }
+      
+      .info-item {
+        padding: 0.9rem;
+      }
+      
+      table {
+        font-size: 0.8rem;
+      }
+      
+      th, td {
+        padding: 0.6rem 0.4rem;
+      }
+      
+      .footer {
+        font-size: 0.85rem;
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>상표 출원 신청내역</h1>
+    <p class="subtitle">짜장나라 상표 출원 정보</p>
+    
+    <div class="section">
+      <h2 class="section-title">상표 정보</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">상표명</span>
+          <span class="info-value">짜장나라(www.짜장나라.com)</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">상표 분류</span>
+          <span class="info-value">43류 (카페,요식업,식당,베이커리,주점,숙박의 서비스업)</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">상표 유형</span>
+          <span class="info-value">문자상표</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">상품 및 서비스 소개</span>
+          <span class="info-value">중화요리를 취급합니다.</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">출원번호(일자)</span>
+          <span class="info-value">4020250115290 (2025년 07월 01일)</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-title">출원인 정보</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">출원인</span>
+          <span class="info-value">염혜리 (국내개인)</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">특허고객번호</span>
+          <span class="info-value">420250163895</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-title">지정상품 정보</h2>
+      <div class="info-item">
+        <span class="info-label">43류</span>
+        <span class="info-value">(카페,요식업,식당,베이커리,주점,숙박의 서비스업)</span>
+      </div>
+      
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>유사군 코드</th>
+              <th>지정상품</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="code">S120603</span></td>
+              <td>주점업, 선술집업</td>
+            </tr>
+            <tr>
+              <td><span class="code">S120602</span></td>
+              <td>식당업, 포장판매식당업, 셀프서비스식당업, 개인요리사서비스업, 가정배달 음식점업, 간이음식점업, 식당체인업, 중국음식점업</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="section">
+      <h2 class="section-title">담당자 정보</h2>
+      <div class="info-grid">
+        <div class="info-item">
+          <span class="info-label">담당자</span>
+          <span class="info-value">최인석 (대표 담당자)</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">이메일</span>
+          <span class="info-value">aibrew@naver.com</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">연락처</span>
+          <span class="info-value">01059455925</span>
+        </div>
+      </div>
+    </div>
+    
+    <div class="footer">
+      <p>상세한 상표 출원 정보는 markinfo.kr 사이트에서 확인하실 수 있습니다.</p>
+      <p style="margin-top: 0.5rem; color: #d9a441;">※ 해당 사이트는 로그인이 필요할 수 있습니다.</p>
+    </div>
+  </div>
+</body>
+</html>

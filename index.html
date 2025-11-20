@@ -6,15 +6,48 @@
 
   <meta charset="UTF-8" />
 
-  <title>짜장나라 세종본점</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>짜장나라 세종본점 - 세종맛집 / 세종짜장 / 세종짬뽕 / 집현동 중식 맛집</title>
 
-  <meta name="description" content="짜장나라 세종본점 - 진공반죽면으로 만드는 프리미엄 중화요리 전문점" />
+  <meta name="description" content="세종 집현동 중식 맛집 짜장나라 세종본점. 진공반죽면으로 만든 짜장면, 얼큰 불향 짬뽕, 미니탕수육 전문. 세종맛집·세종짜장·세종짬뽕 검색 1순위 중화요리 전문점." />
+
+  <meta name="keywords" content="세종맛집, 세종짜장, 세종짬뽕, 세종중식, 세종 배달맛집, 세종 중국집, 집현동 맛집, 세종 중화요리" />
+
+
+  <!-- Open Graph / Facebook / KakaoTalk -->
+  <meta property="og:title" content="짜장나라 세종본점 - 세종 짜장면·짬뽕 전문점" />
+  <meta property="og:description" content="세종 집현동 짜장면 맛집! 진공반죽면으로 만든 깊은 맛의 짜장면·짬뽕·볶음밥 전문점" />
+  <meta property="og:image" content="https://짜장나라.com/assets/logo.png" />
+  <meta property="og:url" content="https://짜장나라.com" />
+  <meta property="og:type" content="website" />
 
   <meta name="naver-site-verification" content="0980d553e25a4bb2e9146fec1d28ab96c096efda" />
 
   <meta name="google-site-verification" content="j0ud_wxNARneFxSvtT_0KsmsPd0imCodkYCd0Pp6KBE" />
+
+  <meta name="daum-site-verification" content="be1b71220b42da3bd42620ee60f6ddd1ef4add160573109e93798c28a0817a03" />
+
+  <!-- JSON-LD 구조화 데이터 -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Restaurant",
+    "name": "짜장나라 세종본점",
+    "address": {
+      "@type": "PostalAddress",
+      "addressLocality": "세종특별자치시 집현동",
+      "streetAddress": "집현중앙7로 6 G동 158호"
+    },
+    "servesCuisine": ["중식", "짜장면", "짬뽕", "중화요리"],
+    "image": "https://짜장나라.com/assets/logo.png",
+    "url": "https://짜장나라.com",
+    "founder": {
+      "@type": "Person",
+      "name": "염혜리"
+    }
+  }
+  </script>
 
   <style>
 
@@ -1089,7 +1122,65 @@
 
       display: inline-block;
 
-      margin-bottom: 0.2rem;
+    }
+
+
+
+    .local-seo {
+
+      font-size: 0.88rem;
+
+      line-height: 1.8;
+
+      color: var(--text-sub);
+
+      margin-top: 1.5rem;
+
+      padding: 1.2rem;
+
+      background: rgba(255, 255, 255, 0.02);
+
+      border-radius: 0.5rem;
+
+      border: 1px solid rgba(255, 255, 255, 0.04);
+
+    }
+
+
+
+    .trademark-check-btn {
+
+      display: inline-block;
+
+      margin-left: 0.5rem;
+
+      padding: 0.3rem 0.8rem;
+
+      background: var(--accent-gold);
+
+      color: var(--bg-dark);
+
+      text-decoration: none;
+
+      border-radius: 0.3rem;
+
+      font-size: 0.85rem;
+
+      font-weight: 600;
+
+      transition: all 0.3s ease;
+
+    }
+
+
+
+    .trademark-check-btn:hover {
+
+      background: var(--accent-gold-soft);
+
+      transform: translateY(-1px);
+
+      box-shadow: 0 2px 8px rgba(217, 164, 65, 0.3);
 
     }
 
@@ -1463,6 +1554,282 @@
 
 
 
+    /* 상표 출원 정보 모달 */
+
+    .trademark-modal {
+
+      display: none;
+
+      position: fixed;
+
+      top: 0;
+
+      left: 0;
+
+      right: 0;
+
+      bottom: 0;
+
+      inset: 0;
+
+      z-index: 9999;
+
+      background: rgba(0, 0, 0, 0.9);
+
+      overflow: auto;
+
+    }
+
+
+
+    .trademark-modal.active {
+
+      display: flex;
+
+      flex-direction: column;
+
+    }
+
+
+
+    .trademark-modal-header {
+
+      padding: 1rem 1.5rem;
+
+      background: rgba(0, 0, 0, 0.9);
+
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .trademark-modal-title {
+
+      font-size: 1.2rem;
+
+      font-weight: 600;
+
+      color: var(--accent-gold-soft);
+
+    }
+
+
+
+    .trademark-modal-close {
+
+      width: 44px;
+
+      height: 44px;
+
+      border: 1px solid rgba(255, 255, 255, 0.2);
+
+      background: rgba(0, 0, 0, 0.5);
+
+      border-radius: 50%;
+
+      color: var(--text-main);
+
+      font-size: 1.5rem;
+
+      cursor: pointer;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+      transition: all 0.2s ease;
+
+      -webkit-tap-highlight-color: transparent;
+
+      touch-action: manipulation;
+
+    }
+
+
+
+    .trademark-modal-close:hover {
+
+      background: var(--accent-gold);
+
+      border-color: var(--accent-gold);
+
+      color: #111;
+
+    }
+
+
+
+    .trademark-modal-content {
+
+      flex: 1;
+
+      width: 100%;
+
+      padding: 2rem;
+
+      overflow-y: auto;
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+
+
+    .trademark-info {
+
+      max-width: 600px;
+
+      width: 100%;
+
+      background: rgba(255, 255, 255, 0.05);
+
+      border-radius: 1rem;
+
+      padding: 2rem;
+
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+    }
+
+
+
+    .trademark-info h3 {
+
+      color: var(--accent-gold-soft);
+
+      font-size: 1.5rem;
+
+      margin-bottom: 1rem;
+
+    }
+
+
+
+    .trademark-info h2 {
+
+      color: var(--accent-gold-soft);
+
+      font-size: 1.2rem;
+
+      margin-top: 2rem;
+
+      margin-bottom: 1rem;
+
+    }
+
+
+
+    .trademark-info p {
+
+      color: var(--text-sub);
+
+      line-height: 1.8;
+
+      margin-bottom: 1rem;
+
+      font-size: 0.95rem;
+
+    }
+
+
+
+    .info-box {
+
+      background: rgba(255, 255, 255, 0.02);
+
+      border: 1px solid rgba(255, 255, 255, 0.08);
+
+      border-radius: 0.5rem;
+
+      padding: 1.5rem;
+
+      margin: 1.5rem 0;
+
+    }
+
+
+
+    .info-item {
+
+      display: flex;
+
+      margin-bottom: 1rem;
+
+    }
+
+
+
+    .info-label {
+
+      font-weight: 600;
+
+      color: var(--accent-gold-soft);
+
+      min-width: 150px;
+
+    }
+
+
+
+    .info-value {
+
+      color: var(--text-sub);
+
+    }
+
+
+
+    .trademark-link-btn {
+
+      display: inline-block;
+
+      margin-top: 1.5rem;
+
+      padding: 0.8rem 1.5rem;
+
+      background: var(--accent-gold);
+
+      color: var(--bg-dark);
+
+      text-decoration: none;
+
+      border-radius: 0.5rem;
+
+      font-weight: 600;
+
+      transition: all 0.3s ease;
+
+    }
+
+
+
+    .trademark-link-btn:hover {
+
+      background: var(--accent-gold-soft);
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(217, 164, 65, 0.4);
+
+    }
+
+
+
     /* 로또지니 홈 버튼 */
 
     .lotto-home-btn {
@@ -1583,6 +1950,299 @@
     }
 
 
+
+    /* 공식 리뷰 바로가기 & 리뷰 갤러리 */
+    /* TODO: 이미지 준비 후 활성화 예정 */
+
+    .review-links {
+
+      display: none; /* 이미지 준비 후 활성화 예정 */
+
+      text-align: center;
+
+      padding: 4rem 0;
+
+      background: var(--bg-section);
+
+    }
+
+    .review-links h2 {
+
+      font-size: 1.8rem;
+
+      margin-bottom: 0.8rem;
+
+      font-weight: 700;
+
+      color: var(--text-main);
+
+    }
+
+    .review-desc {
+
+      color: var(--text-sub);
+
+      margin-bottom: 2rem;
+
+      font-size: 0.95rem;
+
+    }
+
+    .review-buttons {
+
+      display: grid;
+
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+
+      gap: 1rem;
+
+      max-width: 800px;
+
+      margin: 0 auto;
+
+    }
+
+    .review-btn {
+
+      padding: 1rem 1.5rem;
+
+      border-radius: 0.75rem;
+
+      font-size: 0.95rem;
+
+      font-weight: 600;
+
+      text-decoration: none;
+
+      display: inline-block;
+
+      color: white;
+
+      transition: all 0.3s ease;
+
+      text-align: center;
+
+    }
+
+    .review-btn:hover {
+
+      transform: translateY(-2px);
+
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+    }
+
+    .review-btn.naver {
+
+      background: #03c75a;
+
+    }
+
+    .review-btn.naver:hover {
+
+      background: #02b350;
+
+    }
+
+    .review-btn.baemin {
+
+      background: #2ac1bc;
+
+    }
+
+    .review-btn.baemin:hover {
+
+      background: #24a8a3;
+
+    }
+
+    .review-btn.yogiyo {
+
+      background: #d8343c;
+
+    }
+
+    .review-btn.yogiyo:hover {
+
+      background: #c22d34;
+
+    }
+
+    .review-btn.coupang {
+
+      background: #fae100;
+
+      color: #333;
+
+    }
+
+    .review-btn.coupang:hover {
+
+      background: #e6ce00;
+
+    }
+
+    .review-gallery {
+
+      display: none; /* 이미지 준비 후 활성화 예정 */
+
+      padding: 4rem 0;
+
+      background: var(--bg-dark);
+
+    }
+
+    .review-gallery h2 {
+
+      font-size: 1.8rem;
+
+      margin-bottom: 0.8rem;
+
+      font-weight: 700;
+
+      color: var(--text-main);
+
+      text-align: center;
+
+    }
+
+    .gallery-desc {
+
+      color: var(--text-sub);
+
+      margin-bottom: 2rem;
+
+      font-size: 0.95rem;
+
+      text-align: center;
+
+    }
+
+    .review-gallery .gallery-grid {
+
+      display: grid;
+
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+      gap: 1rem;
+
+      max-width: 1200px;
+
+      margin: 0 auto;
+
+    }
+
+    .review-gallery .gallery-grid img {
+
+      width: 100%;
+
+      height: auto;
+
+      border-radius: 0.75rem;
+
+      object-fit: cover;
+
+      aspect-ratio: 1;
+
+      border: 1px solid rgba(255, 255, 255, 0.1);
+
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+      cursor: pointer;
+
+    }
+
+    .review-gallery .gallery-grid img:hover {
+
+      transform: scale(1.02);
+
+      box-shadow: 0 8px 24px rgba(217, 164, 65, 0.2);
+
+    }
+
+    @media (max-width: 768px) {
+
+      .review-links {
+
+        padding: 3rem 0;
+
+      }
+
+      .review-links h2 {
+
+        font-size: 1.5rem;
+
+      }
+
+      .review-buttons {
+
+        grid-template-columns: 1fr;
+
+        gap: 0.8rem;
+
+        padding: 0 1rem;
+
+      }
+
+      .review-btn {
+
+        padding: 0.9rem 1.2rem;
+
+        font-size: 0.9rem;
+
+      }
+
+      .review-gallery {
+
+        padding: 3rem 0;
+
+      }
+
+      .review-gallery h2 {
+
+        font-size: 1.5rem;
+
+      }
+
+      .review-gallery .gallery-grid {
+
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+
+        gap: 0.8rem;
+
+        padding: 0 1rem;
+
+      }
+
+    }
+
+    @media (max-width: 480px) {
+
+      .review-links h2,
+
+      .review-gallery h2 {
+
+        font-size: 1.3rem;
+
+      }
+
+      .review-desc,
+
+      .gallery-desc {
+
+        font-size: 0.85rem;
+
+      }
+
+      .review-gallery .gallery-grid {
+
+        grid-template-columns: 1fr 1fr;
+
+        gap: 0.6rem;
+
+      }
+
+    }
 
     /* 오시는 길 & 푸터 */
 
@@ -1882,7 +2542,7 @@
 
         <div class="brand-logo">
 
-          <img src="assets/images/logo.png.png" alt="짜장나라 로고" />
+          <img src="assets/images/logo.png.png" alt="짜장나라 세종본점 로고" />
 
         </div>
 
@@ -1958,21 +2618,23 @@
 
       </div>
 
-      <h1 class="hero-title">
+      <h1>세종 짜장면 맛집 | 짜장나라 세종본점</h1>
+
+      <h2 class="hero-title">
 
         진공반죽면으로 만드는<br />
 
         짜장·짬뽕의 기준
 
-      </h1>
+      </h2>
 
       <p class="hero-subtitle">
 
-        면 강화제를 넣지 않고 진공 상태에서 반죽해 끊김은 줄이고
+        세종 집현동 짜장면 맛집 짜장나라에서는 면 강화제를 넣지 않고 진공 상태에서 반죽해 끊김은 줄이고
 
         소화는 더 편하게. 한 그릇의 짜장면에도 건강과 정성을 담아
 
-        매일 찾아주시는 단골 손님들께 보답합니다.
+        매일 찾아주시는 세종 단골 손님들께 보답합니다.
 
       </p>
 
@@ -1986,7 +2648,7 @@
 
       <div class="hero-meta">
 
-        영업시간: 오전 10시 ~ 오후 8시 · 세종특별자치시 집현동 일대
+        영업시간: 오전 10시 ~ 오후 8시 · 세종특별자치시 집현중앙7로6,G동 158호
 
       </div>
 
@@ -2010,9 +2672,17 @@
 
         <p class="section-desc">
 
-          가장 많이 사랑받는 베스트 메뉴들입니다.  
+          세종 집현동에서 가장 많이 사랑받는 베스트 메뉴들입니다.  
 
           실제 식스샵 주문 페이지 혹은 배달앱 메뉴 구성과 연결해 사용하시면 됩니다.
+
+        </p>
+
+        <p style="margin-top: 1rem; font-size: 0.92rem; color: var(--text-sub); max-width: 560px;">
+
+          진공반죽으로 만든 짜장면과 불향 가득한 짬뽕, 초미니탕수육 세트는
+
+          세종 짜장면 맛집, 세종 짬뽕 맛집을 찾는 손님들께 특히 사랑받는 메뉴입니다.
 
         </p>
 
@@ -2028,7 +2698,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-1(짜장면).jpg.jpg" alt="짜장면" loading="eager" />
+            <img src="assets/images/menu-1(짜장면).jpg.jpg" alt="세종 짜장면 맛집 짜장나라 대표메뉴 짜장면" loading="eager" />
 
           </div>
 
@@ -2060,7 +2730,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-1-2(짬뽕).jpg.jpg" alt="짬뽕" loading="eager" />
+            <img src="assets/images/menu-1-2(짬뽕).jpg.jpg" alt="세종 짬뽕 맛집 짜장나라 대표메뉴 짬뽕" loading="eager" />
 
           </div>
 
@@ -2092,7 +2762,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-1-3(짬짜면)jpg.jpg" alt="짬짜면" loading="eager" />
+            <img src="assets/images/menu-1-3(짬짜면)jpg.jpg" alt="세종 짬짜면 맛집 짜장나라 대표메뉴 짬짜면" loading="eager" />
 
           </div>
 
@@ -2124,7 +2794,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-5(탕수육 중).jpg.jpg" alt="미니탕수육" loading="eager" />
+            <img src="assets/images/menu-5(탕수육 중).jpg.jpg" alt="세종 탕수육 맛집 짜장나라 대표메뉴 미니탕수육" loading="eager" />
 
           </div>
 
@@ -2156,7 +2826,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-5(탕수육 중).jpg.jpg" alt="탕수육(중)" loading="eager" />
+            <img src="assets/images/menu-5(탕수육 중).jpg.jpg" alt="세종 탕수육 맛집 짜장나라 대표메뉴 탕수육 중" loading="eager" />
 
           </div>
 
@@ -2188,7 +2858,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-6(짬뽕밥).jpg.jpg" alt="짬뽕밥" loading="eager" />
+            <img src="assets/images/menu-6(짬뽕밥).jpg.jpg" alt="세종 짬뽕밥 맛집 짜장나라 대표메뉴 짬뽕밥" loading="eager" />
 
           </div>
 
@@ -2220,7 +2890,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-7(볶음밥).jpg.jpg" alt="볶음밥" loading="eager" />
+            <img src="assets/images/menu-7(볶음밥).jpg.jpg" alt="세종 볶음밥 맛집 짜장나라 대표메뉴 볶음밥" loading="eager" />
 
           </div>
 
@@ -2252,7 +2922,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-8(잡채밥).jpg.jpg" alt="잡채밥" loading="eager" />
+            <img src="assets/images/menu-8(잡채밥).jpg.jpg" alt="세종 잡채밥 맛집 짜장나라 대표메뉴 잡채밥" loading="eager" />
 
           </div>
 
@@ -2284,7 +2954,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-9(마파두부밥).jpg.jpg" alt="마파두부밥" loading="eager" />
+            <img src="assets/images/menu-9(마파두부밥).jpg.jpg" alt="세종 마파두부밥 맛집 짜장나라 대표메뉴 마파두부밥" loading="eager" />
 
           </div>
 
@@ -2316,7 +2986,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-10(제육덮밥).jpg.jpg" alt="제육덮밥" loading="eager" />
+            <img src="assets/images/menu-10(제육덮밥).jpg.jpg" alt="세종 제육덮밥 맛집 짜장나라 대표메뉴 제육덮밥" loading="eager" />
 
           </div>
 
@@ -2348,7 +3018,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-11(중화비빔밥).jpg.jpg" alt="중화비빔밥" loading="eager" />
+            <img src="assets/images/menu-11(중화비빔밥).jpg.jpg" alt="세종 중화비빔밥 맛집 짜장나라 대표메뉴 중화비빔밥" loading="eager" />
 
           </div>
 
@@ -2380,7 +3050,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-1.jpg.jpg" alt="짜장밥" loading="eager" />
+            <img src="assets/images/menu-1.jpg.jpg" alt="세종 짜장밥 맛집 짜장나라 대표메뉴 짜장밥" loading="eager" />
 
           </div>
 
@@ -2412,7 +3082,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-12(세트).jpg.png" alt="혼밥세트" loading="eager" />
+            <img src="assets/images/menu-12(세트).jpg.png" alt="세종 혼밥세트 맛집 짜장나라 대표메뉴 혼밥세트" loading="eager" />
 
           </div>
 
@@ -2444,7 +3114,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-12(세트).jpg.png" alt="달달커플세트" loading="eager" />
+            <img src="assets/images/menu-12(세트).jpg.png" alt="세종 달달커플세트 맛집 짜장나라 대표메뉴 달달커플세트" loading="eager" />
 
           </div>
 
@@ -2476,7 +3146,7 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-12(세트).jpg.png" alt="패밀리세트" loading="eager" />
+            <img src="assets/images/menu-12(세트).jpg.png" alt="세종 패밀리세트 맛집 짜장나라 대표메뉴 패밀리세트" loading="eager" />
 
           </div>
 
@@ -2533,41 +3203,25 @@
 
           <p>
 
-            짜장나라 세종본점은
+            짜장나라 세종본점은 <strong>대표 염혜리</strong>가 직접 운영하는 세종 집현동 중화요리 전문점으로,
 
-            <span class="about-highlight">"진공반죽면"</span>을 사용하는
-
-            중화요리 전문점입니다.  
-
-            반죽 과정에서 공기를 뺀 상태로 밀어 올린 면은
-
-            일반 면보다 끊김이 적고, 소화가 훨씬 편안하다는 장점이 있습니다.
+            진공반죽면으로 만든 부드럽고 쫄깃한 짜장면과 깊은 불향의 얼큰 짬뽕을 제공합니다.
 
           </p>
 
-          <br />
-
           <p>
 
-            우리는 화려한 메뉴보다
+            면 강화제를 넣지 않고 진공압력으로 반죽하여 소화가 잘 되고 부담이 적은 면만 사용하며,
 
-            <span class="about-highlight">"매일 먹고 싶은 한 끼"</span>에 집중합니다.
-
-            점심, 저녁 언제 오셔도 일정한 맛을 유지하는 것,
-
-            그것이 세종본점이 가장 중요하게 생각하는 가치입니다.
+            매일 아침 재료를 준비해 세종 집현동 주민들이 안심하고 찾을 수 있는 중식 맛집을 지향합니다.
 
           </p>
 
-          <br />
-
           <p>
 
-            작은 공간이지만,  
+            세종에서 중화요리를 찾으신다면, 세종맛집, 세종짜장, 세종짬뽕, 세종중식, 세종 배달맛집을 찾으신다면
 
-            늘 찾아주시는 단골 손님들이 편하게 식사하고 가실 수 있는
-
-            동네 중화요리집으로 남고자 합니다.
+            집현동 짜장나라 세종본점에서 직접 차이를 느껴보세요.
 
           </p>
 
@@ -2601,6 +3255,18 @@
 
       </div>
 
+
+
+      <div class="local-seo">
+
+        세종특별자치시 집현중앙7로6,G동 158호에 위치한 
+
+        짜장나라 세종본점은 진공반죽면으로 만든 프리미엄 짜장면·짬뽕 전문점입니다. 
+
+        포장과 배달 모두 가능하며, 집현동·아름동·종촌동 인근 주민들이 사랑하는 중국집입니다.
+
+      </div>
+
     </div>
 
   </section>
@@ -2621,9 +3287,9 @@
 
         <p class="section-desc">
 
-          저희 매장은 집현동 지식산업센터 A동 지하 1층(G동)에 위치하고 있으며 1번 게이트를 통해 쉽게 찾아 오실 수 있습니다.
+          저희 매장은 세종 집현동 집현중앙7로6,G동 158호에 위치하고 있으며 1번 게이트를 통해 쉽게 찾아 오실 수 있습니다.
 
-          주차장은 평일 11시~14시 까지, 휴일은 24시간 무료입니다.
+          세종 집현동 주차장은 평일 11시~14시 까지, 휴일은 24시간 무료입니다.
 
         </p>
 
@@ -2635,19 +3301,19 @@
 
         <div class="gallery-item">
 
-          <img src="assets/images/store-1.jpg.jpg" alt="매장 사진 1" loading="eager" />
+          <img src="assets/images/store-1.jpg.jpg" alt="짜장나라 세종본점 매장 내부" loading="eager" />
 
         </div>
 
         <div class="gallery-item">
 
-          <img src="assets/images/store-2.jpg.jpg" alt="매장 사진 2" loading="eager" />
+          <img src="assets/images/store-2.jpg.jpg" alt="짜장나라 세종본점 매장 내부" loading="eager" />
 
         </div>
 
         <div class="gallery-item">
 
-          <img src="assets/images/store-3.jpg.jpg" alt="매장 사진 3" loading="eager" />
+          <img src="assets/images/store-3.jpg.jpg" alt="짜장나라 세종본점 매장 내부" loading="eager" />
 
         </div>
 
@@ -2747,6 +3413,47 @@
 
 
 
+  <!-- 상표 출원 정보 모달 -->
+  <div class="trademark-modal" id="trademarkModal">
+    <div class="trademark-modal-header">
+      <div class="trademark-modal-title">상표 출원 정보</div>
+      <button class="trademark-modal-close" id="trademarkModalClose" aria-label="닫기">×</button>
+    </div>
+    <div class="trademark-modal-content">
+      <div class="trademark-info">
+        <h3>짜장나라 상표 출원 정보</h3>
+        
+        <div class="info-box">
+          <p>본 업소는 "짜장나라"의 상호가 상표출원된 업소입니다.</p>
+        </div>
+
+        <h2>상표 출원 상세 정보</h2>
+        <div class="info-box">
+          <div class="info-item">
+            <span class="info-label">상표명:</span>
+            <span class="info-value">짜장나라</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">출원번호:</span>
+            <span class="info-value">20551</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">상태:</span>
+            <span class="info-value">출원</span>
+          </div>
+        </div>
+
+        <h2>추가 정보</h2>
+        <div class="info-box">
+          <p>상세한 상표 출원 정보는 markinfo.kr 사이트에서 확인하실 수 있습니다.</p>
+          <p style="color: var(--accent-gold-soft); font-size: 0.9rem; margin-top: 0.5rem;">※ 해당 사이트는 로그인이 필요할 수 있습니다.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
   <!-- 홈으로 돌아가기 버튼 (모달이 열릴 때만 표시) -->
 
   <button class="lotto-home-btn" id="lottoHomeBtn" aria-label="홈으로 돌아가기">
@@ -2758,6 +3465,90 @@
     </svg>
 
   </button>
+
+
+
+  <!-- 공식 리뷰 바로가기 -->
+
+  <section class="review-links">
+
+    <div class="section-inner">
+
+      <h2>공식 리뷰 바로가기</h2>
+
+      <p class="review-desc">
+
+        짜장나라 세종본점을 이용해 주신 고객님들의 실제 리뷰를 확인하세요.
+
+      </p>
+
+      <div class="review-buttons">
+
+        <a href="네이버리뷰URL" target="_blank" rel="noopener noreferrer" class="review-btn naver">
+
+          네이버 리뷰 보기
+
+        </a>
+
+        <a href="배민리뷰URL" target="_blank" rel="noopener noreferrer" class="review-btn baemin">
+
+          배달의민족 리뷰 보기
+
+        </a>
+
+        <a href="요기요URL" target="_blank" rel="noopener noreferrer" class="review-btn yogiyo">
+
+          요기요 리뷰 보기
+
+        </a>
+
+        <a href="쿠팡리뷰URL" target="_blank" rel="noopener noreferrer" class="review-btn coupang">
+
+          쿠팡이츠 리뷰 보기
+
+        </a>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+
+  <!-- 고객 리뷰 갤러리 -->
+
+  <section class="review-gallery">
+
+    <div class="section-inner">
+
+      <h2>고객 리뷰 갤러리</h2>
+
+      <p class="gallery-desc">
+
+        손님들이 남겨주신 실제 이용 후기입니다.
+
+      </p>
+
+
+
+      <div class="gallery-grid">
+
+        <img src="assets/reviews/review1.jpg" alt="고객 리뷰 1" loading="lazy">
+
+        <img src="assets/reviews/review2.jpg" alt="고객 리뷰 2" loading="lazy">
+
+        <img src="assets/reviews/review3.jpg" alt="고객 리뷰 3" loading="lazy">
+
+        <img src="assets/reviews/review4.jpg" alt="고객 리뷰 4" loading="lazy">
+
+        <img src="assets/reviews/review5.jpg" alt="고객 리뷰 5" loading="lazy">
+
+      </div>
+
+    </div>
+
+  </section>
 
 
 
@@ -2787,7 +3578,7 @@
 
           <p>전화: 044-589-3888</p>
 
-          <p>주소: 세종특별자치시 집현동 지식산업센터 A동 지하 1층(G동)</p>
+          <p>주소: 세종특별자치시 집현중앙7로6,G동 158호</p>
 
           <p>영업시간: 오전 10시 ~ 오후 8시</p>
 
@@ -2849,11 +3640,29 @@
 
       <div class="footer-row">
 
-        <span>주소: 세종특별자치시 집현동 일대 (정확 주소 기입)</span>
+        <span>주소: 세종특별자치시 집현중앙7로6,G동 158호</span>
 
         <span>© 짜장나라 세종본점 · All rights reserved.</span>
 
       </div>
+
+
+
+      <div class="local-seo">
+
+        세종특별자치시 집현중앙7로6,G동 158호에 위치한 
+
+        짜장나라 세종본점은 진공반죽면으로 만든 프리미엄 짜장면·짬뽕 전문점입니다. 
+
+        포장과 배달 모두 가능하며, 집현동·아름동·종촌동 인근 주민들이 사랑하는 중국집입니다.
+
+      </div>
+
+      <p style="margin-top: 10px; font-size: 0.85rem; color: #777;">
+
+        세종맛집 · 세종짜장 · 세종짬뽕 · 세종중식 · 세종 배달맛집 · 세종 중국집 · 집현동 맛집 · 세종 중화요리 전문점
+
+      </p>
 
     </div>
 
@@ -2921,7 +3730,7 @@
 
     // 지도 초기화
 
-    const address = "세종특별자치시 집현중앙7로6";
+    const address = "세종특별자치시 집현중앙7로6,G동 158호";
 
 
 
@@ -3080,6 +3889,10 @@
       });
 
     }
+
+
+
+    // 상표 출원 정보는 trademark-info.html 파일로 직접 링크됨
 
 
 
