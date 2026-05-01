@@ -626,6 +626,20 @@
 
       display: inline-flex;
 
+      appearance: none;
+
+      text-align: left;
+
+      font: inherit;
+
+      color: inherit;
+
+      border: 1px solid rgba(255, 255, 255, 0.12);
+
+      -webkit-tap-highlight-color: transparent;
+
+      cursor: pointer;
+
       align-items: center;
 
       gap: 0.85rem;
@@ -640,9 +654,20 @@
 
       background: rgba(255, 255, 255, 0.05);
 
-      border: 1px solid rgba(255, 255, 255, 0.12);
-
       box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+
+    }
+
+
+
+    .business-status:hover,
+    .business-status:focus-visible {
+
+      transform: translateY(-1px);
+
+      border-color: rgba(255, 255, 255, 0.22);
+
+      outline: none;
 
     }
 
@@ -2682,7 +2707,7 @@
 
       </div>
 
-      <div class="business-status is-open" id="businessStatus" aria-live="polite">
+      <button type="button" class="business-status is-open" id="businessStatus" aria-live="polite" aria-expanded="false" aria-controls="businessStatusAdmin">
 
         <span class="business-status-lamp" aria-hidden="true"></span>
 
@@ -2694,7 +2719,7 @@
 
         </div>
 
-      </div>
+      </button>
 
       <div class="business-status-admin" id="businessStatusAdmin" hidden>
 
@@ -2714,7 +2739,7 @@
 
           <p class="business-status-admin-message" id="businessStatusAdminMessage" hidden>비밀번호가 올바르지 않습니다.</p>
 
-          <p class="business-status-admin-hint">관리자 접속용 `?admin=1` 페이지에서만 보입니다.</p>
+          <p class="business-status-admin-hint">영업 상태 등불을 누르면 관리자 제어가 열립니다.</p>
 
         </div>
 
@@ -3886,6 +3911,7 @@
     const businessStatusStorageKey = "jjajangnara-business-status-mode";
     const businessStatusAuthKey = "jjajangnara-business-status-auth";
     const businessHoursStorageKey = "jjajangnara-business-hours";
+    const businessStatusPanelKey = "jjajangnara-business-status-panel-open";
     const businessStatusAdminPassword = "13260";
     const defaultBusinessHours = {
       openMinutes: 10 * 60,
@@ -4104,6 +4130,47 @@
 
 
 
+    function isBusinessStatusAdminPanelOpen() {
+
+      try {
+
+        return globalThis.sessionStorage.getItem(businessStatusPanelKey) === "open";
+
+      } catch (error) {
+
+        console.log("관리자 패널 상태를 읽지 못했습니다:", error);
+
+      }
+
+      return false;
+
+    }
+
+
+
+    function setBusinessStatusAdminPanelOpen(isOpen) {
+
+      try {
+
+        if (isOpen) {
+
+          globalThis.sessionStorage.setItem(businessStatusPanelKey, "open");
+          return;
+
+        }
+
+        globalThis.sessionStorage.removeItem(businessStatusPanelKey);
+
+      } catch (error) {
+
+        console.log("관리자 패널 상태를 저장하지 못했습니다:", error);
+
+      }
+
+    }
+
+
+
     function setBusinessStatusAuthenticated(isAuthenticated) {
 
       try {
@@ -4177,7 +4244,9 @@
       const adminButtons = document.querySelectorAll(".business-status-admin-btn");
       const isAdminMode = isBusinessStatusAdminMode();
       const isAuthenticated = isBusinessStatusAuthenticated();
+      const isPanelOpen = isAdminMode || isBusinessStatusAdminPanelOpen() || isAuthenticated;
       const currentMode = getBusinessStatusMode();
+      const statusButton = document.getElementById("businessStatus");
 
       if (!adminPanel) {
 
@@ -4185,17 +4254,23 @@
 
       }
 
-      adminPanel.hidden = !isAdminMode;
+      adminPanel.hidden = !isPanelOpen;
 
       if (adminLogin) {
 
-        adminLogin.hidden = !isAdminMode || isAuthenticated;
+        adminLogin.hidden = !isPanelOpen || isAuthenticated;
 
       }
 
       if (adminControls) {
 
-        adminControls.hidden = !isAdminMode || !isAuthenticated;
+        adminControls.hidden = !isPanelOpen || !isAuthenticated;
+
+      }
+
+      if (statusButton) {
+
+        statusButton.setAttribute("aria-expanded", String(isPanelOpen));
 
       }
 
@@ -4253,6 +4328,7 @@
       const adminButtons = document.querySelectorAll(".business-status-admin-btn");
       const loginButton = document.getElementById("businessStatusLoginButton");
       const logoutButton = document.getElementById("businessStatusLogoutButton");
+      const statusButton = document.getElementById("businessStatus");
       const passwordInput = document.getElementById("businessStatusPassword");
       const adminMessage = document.getElementById("businessStatusAdminMessage");
       const openInput = document.getElementById("businessStatusOpenTime");
@@ -4291,6 +4367,7 @@
 
         }
 
+        setBusinessStatusAdminPanelOpen(true);
         setBusinessStatusAuthenticated(true);
         updateBusinessStatusAdminUi();
         updateBusinessStatusLamp();
@@ -4343,6 +4420,7 @@
 
         logoutButton.addEventListener("click", function () {
 
+          setBusinessStatusAdminPanelOpen(false);
           setBusinessStatusAuthenticated(false);
           updateBusinessStatusAdminUi();
           updateBusinessStatusLamp();
@@ -4400,6 +4478,42 @@
           syncBusinessHoursAdminUi();
           updateBusinessHoursText();
           updateBusinessStatusLamp();
+
+        });
+
+      }
+
+      if (statusButton) {
+
+        const openAdminPanel = function () {
+
+          setBusinessStatusAdminPanelOpen(true);
+          updateBusinessStatusAdminUi();
+
+          if (isBusinessStatusAuthenticated()) {
+
+            globalThis.setTimeout(scrollToBusinessStatusAdminPanel, 40);
+            return;
+
+          }
+
+          if (passwordInput) {
+
+            globalThis.setTimeout(() => passwordInput.focus(), 40);
+
+          }
+
+        };
+
+        statusButton.addEventListener("click", openAdminPanel);
+        statusButton.addEventListener("keydown", function (event) {
+
+          if (event.key === "Enter" || event.key === " ") {
+
+            event.preventDefault();
+            openAdminPanel();
+
+          }
 
         });
 
