@@ -757,7 +757,7 @@
 
 
 
-    .business-status-admin {
+    .business-status-editor {
 
       display: flex;
 
@@ -781,7 +781,7 @@
 
 
 
-    .business-status-admin[hidden] {
+    .business-status-editor[hidden] {
 
       display: none;
 
@@ -789,7 +789,7 @@
 
 
 
-    .business-status-admin-title {
+    .business-status-editor-title {
 
       font-size: 0.82rem;
 
@@ -803,7 +803,7 @@
 
 
 
-    .business-status-admin-head {
+    .business-status-editor-head {
 
       display: flex;
 
@@ -817,8 +817,8 @@
 
 
 
-    .business-status-admin-login,
-    .business-status-admin-panel {
+    .business-status-editor-login,
+    .business-status-control-panel {
 
       display: flex;
 
@@ -830,8 +830,8 @@
 
 
 
-    .business-status-admin-login[hidden],
-    .business-status-admin-panel[hidden] {
+    .business-status-editor-login[hidden],
+    .business-status-control-panel[hidden] {
 
       display: none;
 
@@ -839,7 +839,7 @@
 
 
 
-    .business-status-admin-label {
+    .business-status-editor-label {
 
       font-size: 0.78rem;
 
@@ -849,7 +849,7 @@
 
 
 
-    .business-status-admin-login-row {
+    .business-status-editor-row {
 
       display: flex;
 
@@ -861,7 +861,7 @@
 
 
 
-    .business-status-admin-input {
+    .business-status-editor-input {
 
       min-width: 220px;
 
@@ -885,7 +885,7 @@
 
 
 
-    .business-status-admin-input:focus {
+    .business-status-editor-input:focus {
 
       border-color: rgba(217, 164, 65, 0.5);
 
@@ -895,7 +895,7 @@
 
 
 
-    .business-status-admin-actions {
+    .business-status-editor-actions {
 
       display: flex;
 
@@ -907,7 +907,7 @@
 
 
 
-    .business-status-admin-btn {
+    .business-status-editor-btn {
 
       border: 1px solid rgba(255, 255, 255, 0.16);
 
@@ -931,7 +931,7 @@
 
 
 
-    .business-status-admin-btn:hover {
+    .business-status-editor-btn:hover {
 
       border-color: rgba(255, 255, 255, 0.3);
 
@@ -941,7 +941,7 @@
 
 
 
-    .business-status-admin-btn--logout {
+    .business-status-editor-btn--logout {
 
       background: transparent;
 
@@ -951,7 +951,7 @@
 
 
 
-    .business-status-admin-btn.is-active {
+    .business-status-editor-btn.is-active {
 
       border-color: var(--accent-gold);
 
@@ -965,7 +965,7 @@
 
 
 
-    .business-status-admin-hint {
+    .business-status-editor-hint {
 
       font-size: 0.76rem;
 
@@ -975,7 +975,7 @@
 
 
 
-    .business-status-admin-message {
+    .business-status-editor-message {
 
       font-size: 0.76rem;
 
@@ -985,7 +985,7 @@
 
 
 
-    .business-status-admin-message[hidden] {
+    .business-status-editor-message[hidden] {
 
       display: none;
 
@@ -2707,7 +2707,7 @@
 
       </div>
 
-      <button type="button" class="business-status is-open" id="businessStatus" aria-live="polite" aria-expanded="false" aria-controls="businessStatusAdmin">
+      <button type="button" class="business-status is-open" id="businessStatus" aria-live="polite" aria-expanded="false" aria-controls="businessStatusEditor">
 
         <span class="business-status-lamp" aria-hidden="true"></span>
 
@@ -2721,67 +2721,67 @@
 
       </button>
 
-      <div class="business-status-admin" id="businessStatusAdmin" hidden>
+      <div class="business-status-editor" id="businessStatusEditor" hidden>
 
-        <div class="business-status-admin-login" id="businessStatusAdminLogin" hidden>
+        <div class="business-status-editor-login" id="businessStatusEditorLogin" hidden>
 
-          <div class="business-status-admin-title">관리자 인증</div>
+          <div class="business-status-editor-title">관리자 인증</div>
 
-          <label class="business-status-admin-label" for="businessStatusPassword">비밀번호를 입력해야 관리자 제어가 열립니다</label>
+          <label class="business-status-editor-label" for="businessStatusPassword">비밀번호를 입력해야 관리자 제어가 열립니다</label>
 
-          <div class="business-status-admin-login-row">
+          <div class="business-status-editor-row">
 
-            <input id="businessStatusPassword" class="business-status-admin-input" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호 입력" />
+            <input id="businessStatusPassword" class="business-status-editor-input" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호 입력" />
 
-            <button type="button" class="business-status-admin-btn" id="businessStatusLoginButton">확인</button>
+            <button type="button" class="business-status-editor-btn" id="businessStatusLoginButton">확인</button>
 
           </div>
 
-          <p class="business-status-admin-message" id="businessStatusAdminMessage" hidden>비밀번호가 올바르지 않습니다.</p>
+          <p class="business-status-editor-message" id="businessStatusEditorMessage" hidden>비밀번호가 올바르지 않습니다.</p>
 
-          <p class="business-status-admin-hint">영업 상태 등불을 누르면 관리자 제어가 열립니다.</p>
+          <p class="business-status-editor-hint">영업 상태 등불을 누르면 관리자 제어가 열립니다.</p>
 
         </div>
 
-        <div class="business-status-admin-panel" id="businessStatusAdminPanel" hidden>
+        <div class="business-status-control-panel" id="businessStatusControlPanel" hidden>
 
-          <div class="business-status-admin-head">
+          <div class="business-status-editor-head">
 
-            <div class="business-status-admin-title">관리자 수동 제어</div>
+            <div class="business-status-editor-title">관리자 수동 제어</div>
 
-            <button type="button" class="business-status-admin-btn business-status-admin-btn--logout" id="businessStatusLogoutButton">로그아웃</button>
-
-          </div>
-
-          <div class="business-status-admin-actions">
-
-            <button type="button" class="business-status-admin-btn" data-status-mode="auto">자동</button>
-
-            <button type="button" class="business-status-admin-btn" data-status-mode="open">강제 영업중</button>
-
-            <button type="button" class="business-status-admin-btn" data-status-mode="closed">강제 휴무</button>
+            <button type="button" class="business-status-editor-btn business-status-editor-btn--logout" id="businessStatusLogoutButton">로그아웃</button>
 
           </div>
 
-          <label class="business-status-admin-label" for="businessStatusOpenTime">자동 영업시간 설정</label>
+          <div class="business-status-editor-actions">
 
-          <div class="business-status-admin-login-row">
+            <button type="button" class="business-status-editor-btn" data-status-mode="auto">자동</button>
 
-            <input id="businessStatusOpenTime" class="business-status-admin-input" type="time" aria-label="영업 시작 시간" />
+            <button type="button" class="business-status-editor-btn" data-status-mode="open">강제 영업중</button>
 
-            <input id="businessStatusCloseTime" class="business-status-admin-input" type="time" aria-label="영업 종료 시간" />
-
-            <button type="button" class="business-status-admin-btn" id="businessStatusHoursSaveButton">시간 저장</button>
-
-            <button type="button" class="business-status-admin-btn" id="businessStatusHoursResetButton">기본 시간</button>
+            <button type="button" class="business-status-editor-btn" data-status-mode="closed">강제 휴무</button>
 
           </div>
 
-          <p class="business-status-admin-message" id="businessStatusHoursMessage" hidden>영업시간을 저장할 수 없습니다.</p>
+          <label class="business-status-editor-label" for="businessStatusOpenTime">자동 영업시간 설정</label>
 
-          <p class="business-status-admin-hint" id="businessStatusHoursSummary">현재 자동 영업시간: 오전 10시 ~ 오후 8시</p>
+          <div class="business-status-editor-row">
 
-          <p class="business-status-admin-hint">현재 브라우저 세션에만 로그인 상태가 유지됩니다.</p>
+            <input id="businessStatusOpenTime" class="business-status-editor-input" type="time" aria-label="영업 시작 시간" />
+
+            <input id="businessStatusCloseTime" class="business-status-editor-input" type="time" aria-label="영업 종료 시간" />
+
+            <button type="button" class="business-status-editor-btn" id="businessStatusHoursSaveButton">시간 저장</button>
+
+            <button type="button" class="business-status-editor-btn" id="businessStatusHoursResetButton">기본 시간</button>
+
+          </div>
+
+          <p class="business-status-editor-message" id="businessStatusHoursMessage" hidden>영업시간을 저장할 수 없습니다.</p>
+
+          <p class="business-status-editor-hint" id="businessStatusHoursSummary">현재 자동 영업시간: 오전 10시 ~ 오후 8시</p>
+
+          <p class="business-status-editor-hint">현재 브라우저 세션에만 로그인 상태가 유지됩니다.</p>
 
         </div>
 
@@ -3911,12 +3911,12 @@
     const businessStatusStorageKey = "jjajangnara-business-status-mode";
     const businessStatusAuthKey = "jjajangnara-business-status-auth";
     const businessHoursStorageKey = "jjajangnara-business-hours";
-    const businessStatusAdminPassword = "01059455925";
+    const businessStatusEditorPassword = "01059455925";
     const defaultBusinessHours = {
       openMinutes: 10 * 60,
       closeMinutes: 20 * 60,
     };
-    let businessStatusAdminPanelOpen = false;
+    let businessStatusEditorPanelOpen = false;
 
 
 
@@ -4068,7 +4068,7 @@
 
 
 
-    function syncBusinessHoursAdminUi() {
+    function syncBusinessHoursEditorUi() {
 
       const openInput = document.getElementById("businessStatusOpenTime");
       const closeInput = document.getElementById("businessStatusCloseTime");
@@ -4122,17 +4122,17 @@
 
 
 
-    function isBusinessStatusAdminPanelOpen() {
+    function isBusinessStatusEditorPanelOpen() {
 
-      return businessStatusAdminPanelOpen;
+      return businessStatusEditorPanelOpen;
 
     }
 
 
 
-    function setBusinessStatusAdminPanelOpen(isOpen) {
+    function setBusinessStatusEditorPanelOpen(isOpen) {
 
-      businessStatusAdminPanelOpen = Boolean(isOpen);
+      businessStatusEditorPanelOpen = Boolean(isOpen);
 
     }
 
@@ -4201,36 +4201,36 @@
 
 
 
-    function updateBusinessStatusAdminUi() {
+    function updateBusinessStatusEditorUi() {
 
-      const adminPanel = document.getElementById("businessStatusAdmin");
-      const adminLogin = document.getElementById("businessStatusAdminLogin");
-      const adminControls = document.getElementById("businessStatusAdminPanel");
-      const adminMessage = document.getElementById("businessStatusAdminMessage");
+      const editorPanel = document.getElementById("businessStatusEditor");
+      const editorLogin = document.getElementById("businessStatusEditorLogin");
+      const controlPanel = document.getElementById("businessStatusControlPanel");
+      const editorMessage = document.getElementById("businessStatusEditorMessage");
       const passwordInput = document.getElementById("businessStatusPassword");
-      const adminButtons = document.querySelectorAll(".business-status-admin-btn");
+      const editorButtons = document.querySelectorAll(".business-status-editor-btn");
       const isAuthenticated = isBusinessStatusAuthenticated();
-      const isPanelOpen = isBusinessStatusAdminPanelOpen();
+      const isPanelOpen = isBusinessStatusEditorPanelOpen();
       const currentMode = getBusinessStatusMode();
       const statusButton = document.getElementById("businessStatus");
 
-      if (!adminPanel) {
+      if (!editorPanel) {
 
         return;
 
       }
 
-      adminPanel.hidden = !isPanelOpen;
+      editorPanel.hidden = !isPanelOpen;
 
-      if (adminLogin) {
+      if (editorLogin) {
 
-        adminLogin.hidden = !isPanelOpen || isAuthenticated;
+        editorLogin.hidden = !isPanelOpen || isAuthenticated;
 
       }
 
-      if (adminControls) {
+      if (controlPanel) {
 
-        adminControls.hidden = !isPanelOpen || !isAuthenticated;
+        controlPanel.hidden = !isPanelOpen || !isAuthenticated;
 
       }
 
@@ -4240,9 +4240,9 @@
 
       }
 
-      if (!isAuthenticated && adminMessage) {
+      if (!isAuthenticated && editorMessage) {
 
-        adminMessage.hidden = true;
+        editorMessage.hidden = true;
 
       }
 
@@ -4264,30 +4264,30 @@
 
       }
 
-      adminButtons.forEach((button) => {
+      editorButtons.forEach((button) => {
 
         button.classList.toggle("is-active", isAuthenticated && button.dataset.statusMode === currentMode);
 
       });
 
-      syncBusinessHoursAdminUi();
+      syncBusinessHoursEditorUi();
 
     }
 
 
 
-    function scrollToBusinessStatusAdminPanel() {
+    function scrollToBusinessStatusEditorPanel() {
 
-      const adminPanel = document.getElementById("businessStatusAdmin");
+      const editorPanel = document.getElementById("businessStatusEditor");
 
-      if (!adminPanel) {
+      if (!editorPanel) {
 
         return;
 
       }
 
       const headerOffset = 80;
-      const elementPosition = adminPanel.getBoundingClientRect().top + globalThis.scrollY;
+      const elementPosition = editorPanel.getBoundingClientRect().top + globalThis.scrollY;
       const offsetPosition = Math.max(elementPosition - headerOffset, 0);
 
       globalThis.scrollTo({
@@ -4301,21 +4301,21 @@
 
 
 
-    function initBusinessStatusAdmin() {
+    function initBusinessStatusEditor() {
 
-      const adminButtons = document.querySelectorAll(".business-status-admin-btn");
+      const editorButtons = document.querySelectorAll(".business-status-editor-btn");
       const loginButton = document.getElementById("businessStatusLoginButton");
       const logoutButton = document.getElementById("businessStatusLogoutButton");
       const statusButton = document.getElementById("businessStatus");
       const passwordInput = document.getElementById("businessStatusPassword");
-      const adminMessage = document.getElementById("businessStatusAdminMessage");
+      const editorMessage = document.getElementById("businessStatusEditorMessage");
       const openInput = document.getElementById("businessStatusOpenTime");
       const closeInput = document.getElementById("businessStatusCloseTime");
       const hoursSaveButton = document.getElementById("businessStatusHoursSaveButton");
       const hoursResetButton = document.getElementById("businessStatusHoursResetButton");
       const hoursMessage = document.getElementById("businessStatusHoursMessage");
 
-      function handleAdminLogin() {
+      function handleEditorLogin() {
 
         if (!passwordInput) {
 
@@ -4325,11 +4325,11 @@
 
         const enteredPassword = passwordInput.value.trim();
 
-        if (enteredPassword !== businessStatusAdminPassword) {
+        if (enteredPassword !== businessStatusEditorPassword) {
 
-          if (adminMessage) {
+          if (editorMessage) {
 
-            adminMessage.hidden = false;
+            editorMessage.hidden = false;
 
           }
 
@@ -4339,21 +4339,21 @@
 
         }
 
-        if (adminMessage) {
+        if (editorMessage) {
 
-          adminMessage.hidden = true;
+          editorMessage.hidden = true;
 
         }
 
-        setBusinessStatusAdminPanelOpen(true);
+        setBusinessStatusEditorPanelOpen(true);
         setBusinessStatusAuthenticated(true);
-        updateBusinessStatusAdminUi();
+        updateBusinessStatusEditorUi();
         updateBusinessStatusLamp();
-        globalThis.setTimeout(scrollToBusinessStatusAdminPanel, 40);
+        globalThis.setTimeout(scrollToBusinessStatusEditorPanel, 40);
 
       }
 
-      adminButtons.forEach((button) => {
+      editorButtons.forEach((button) => {
 
         button.addEventListener("click", function () {
 
@@ -4366,7 +4366,7 @@
           }
 
           setBusinessStatusMode(nextMode);
-          updateBusinessStatusAdminUi();
+          updateBusinessStatusEditorUi();
           updateBusinessStatusLamp();
 
         });
@@ -4375,7 +4375,7 @@
 
       if (loginButton) {
 
-        loginButton.addEventListener("click", handleAdminLogin);
+        loginButton.addEventListener("click", handleEditorLogin);
 
       }
 
@@ -4386,7 +4386,7 @@
           if (event.key === "Enter") {
 
             event.preventDefault();
-            handleAdminLogin();
+            handleEditorLogin();
 
           }
 
@@ -4398,9 +4398,9 @@
 
         logoutButton.addEventListener("click", function () {
 
-          setBusinessStatusAdminPanelOpen(false);
+          setBusinessStatusEditorPanelOpen(false);
           setBusinessStatusAuthenticated(false);
-          updateBusinessStatusAdminUi();
+          updateBusinessStatusEditorUi();
           updateBusinessStatusLamp();
 
         });
@@ -4434,7 +4434,7 @@
           }
 
           setBusinessHours({ openMinutes, closeMinutes });
-          syncBusinessHoursAdminUi();
+          syncBusinessHoursEditorUi();
           updateBusinessHoursText();
           updateBusinessStatusLamp();
 
@@ -4453,7 +4453,7 @@
           }
 
           resetBusinessHours();
-          syncBusinessHoursAdminUi();
+          syncBusinessHoursEditorUi();
           updateBusinessHoursText();
           updateBusinessStatusLamp();
 
@@ -4463,12 +4463,12 @@
 
       if (statusButton) {
 
-        const toggleAdminPanel = function () {
+        const toggleEditorPanel = function () {
 
-          const nextOpenState = !isBusinessStatusAdminPanelOpen();
+          const nextOpenState = !isBusinessStatusEditorPanelOpen();
 
-          setBusinessStatusAdminPanelOpen(nextOpenState);
-          updateBusinessStatusAdminUi();
+          setBusinessStatusEditorPanelOpen(nextOpenState);
+          updateBusinessStatusEditorUi();
 
           if (!nextOpenState) {
 
@@ -4478,7 +4478,7 @@
 
           if (isBusinessStatusAuthenticated()) {
 
-            globalThis.setTimeout(scrollToBusinessStatusAdminPanel, 40);
+            globalThis.setTimeout(scrollToBusinessStatusEditorPanel, 40);
             return;
 
           }
@@ -4491,13 +4491,13 @@
 
         };
 
-        statusButton.addEventListener("click", toggleAdminPanel);
+        statusButton.addEventListener("click", toggleEditorPanel);
         statusButton.addEventListener("keydown", function (event) {
 
           if (event.key === "Enter" || event.key === " ") {
 
             event.preventDefault();
-            toggleAdminPanel();
+            toggleEditorPanel();
 
           }
 
@@ -4505,7 +4505,7 @@
 
       }
 
-      updateBusinessStatusAdminUi();
+      updateBusinessStatusEditorUi();
 
     }
 
@@ -4654,7 +4654,7 @@
     globalThis.addEventListener("DOMContentLoaded", function() {
 
       updateBusinessHoursText();
-      initBusinessStatusAdmin();
+      initBusinessStatusEditor();
       updateBusinessStatusLamp();
 
       initNaverMap();
