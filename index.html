@@ -3911,12 +3911,12 @@
     const businessStatusStorageKey = "jjajangnara-business-status-mode";
     const businessStatusAuthKey = "jjajangnara-business-status-auth";
     const businessHoursStorageKey = "jjajangnara-business-hours";
-    const businessStatusPanelKey = "jjajangnara-business-status-panel-open";
-    const businessStatusAdminPassword = "13260";
+    const businessStatusAdminPassword = "01059455925";
     const defaultBusinessHours = {
       openMinutes: 10 * 60,
       closeMinutes: 20 * 60,
     };
+    let businessStatusAdminPanelOpen = false;
 
 
 
@@ -4132,17 +4132,7 @@
 
     function isBusinessStatusAdminPanelOpen() {
 
-      try {
-
-        return globalThis.sessionStorage.getItem(businessStatusPanelKey) === "open";
-
-      } catch (error) {
-
-        console.log("관리자 패널 상태를 읽지 못했습니다:", error);
-
-      }
-
-      return false;
+      return businessStatusAdminPanelOpen;
 
     }
 
@@ -4150,22 +4140,7 @@
 
     function setBusinessStatusAdminPanelOpen(isOpen) {
 
-      try {
-
-        if (isOpen) {
-
-          globalThis.sessionStorage.setItem(businessStatusPanelKey, "open");
-          return;
-
-        }
-
-        globalThis.sessionStorage.removeItem(businessStatusPanelKey);
-
-      } catch (error) {
-
-        console.log("관리자 패널 상태를 저장하지 못했습니다:", error);
-
-      }
+      businessStatusAdminPanelOpen = Boolean(isOpen);
 
     }
 
@@ -4244,7 +4219,7 @@
       const adminButtons = document.querySelectorAll(".business-status-admin-btn");
       const isAdminMode = isBusinessStatusAdminMode();
       const isAuthenticated = isBusinessStatusAuthenticated();
-      const isPanelOpen = isAdminMode || isBusinessStatusAdminPanelOpen() || isAuthenticated;
+      const isPanelOpen = isAdminMode || isBusinessStatusAdminPanelOpen();
       const currentMode = getBusinessStatusMode();
       const statusButton = document.getElementById("businessStatus");
 
@@ -4277,6 +4252,18 @@
       if (!isAuthenticated && adminMessage) {
 
         adminMessage.hidden = true;
+
+      }
+
+      if (!isAuthenticated) {
+
+        const hoursMessage = document.getElementById("businessStatusHoursMessage");
+
+        if (hoursMessage) {
+
+          hoursMessage.hidden = true;
+
+        }
 
       }
 
@@ -4485,10 +4472,18 @@
 
       if (statusButton) {
 
-        const openAdminPanel = function () {
+        const toggleAdminPanel = function () {
 
-          setBusinessStatusAdminPanelOpen(true);
+          const nextOpenState = !isBusinessStatusAdminPanelOpen();
+
+          setBusinessStatusAdminPanelOpen(nextOpenState);
           updateBusinessStatusAdminUi();
+
+          if (!nextOpenState) {
+
+            return;
+
+          }
 
           if (isBusinessStatusAuthenticated()) {
 
@@ -4505,13 +4500,13 @@
 
         };
 
-        statusButton.addEventListener("click", openAdminPanel);
+        statusButton.addEventListener("click", toggleAdminPanel);
         statusButton.addEventListener("keydown", function (event) {
 
           if (event.key === "Enter" || event.key === " ") {
 
             event.preventDefault();
-            openAdminPanel();
+            toggleAdminPanel();
 
           }
 
