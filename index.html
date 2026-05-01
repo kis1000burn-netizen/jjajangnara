@@ -149,6 +149,7 @@
 
       z-index: 50;
 
+      -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
 
       background: linear-gradient(
@@ -323,6 +324,10 @@
 
     .nav-cta {
 
+      position: relative;
+
+      top: 15px;
+
       padding: 0.5rem 1rem;
 
       border-radius: 999px;
@@ -457,8 +462,6 @@
 
       nav ul li a {
 
-        display: block;
-
         padding: 0.75rem 1.2rem;
 
         min-height: 44px;
@@ -507,49 +510,67 @@
 
 
 
+    .hero-media {
+
+      margin-top: 80px;
+
+      padding: 0;
+
+      background: #000;
+
+      position: relative;
+
+      overflow: hidden;
+
+    }
+
+
+
+    .hero-media::after {
+
+      content: "";
+
+      position: absolute;
+
+      inset: 0;
+
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.32));
+
+      pointer-events: none;
+
+    }
+
+
+
+    .hero-media video {
+
+      width: 100%;
+
+      min-height: 320px;
+
+      max-height: 680px;
+
+      aspect-ratio: 16 / 7;
+
+      object-fit: cover;
+
+      filter: brightness(0.82);
+
+    }
+
+
+
     .hero {
 
       position: relative;
 
-      height: 90vh;
+      min-height: 0;
 
-      min-height: 540px;
+      margin-top: 0;
 
-      margin-top: 80px; /* fixed header 높이 보정 */
+      overflow: visible;
 
-      overflow: hidden;
-
-      background: #000;
-
-    }
-
-
-
-    .hero video {
-
-      position: absolute;
-
-      inset: 0;
-
-      width: 100%;
-
-      height: 100%;
-
-      object-fit: cover;
-
-      filter: brightness(0.8);
-
-    }
-
-
-
-    .hero-overlay {
-
-      position: absolute;
-
-      inset: 0;
-
-      background: radial-gradient(circle at center, rgba(0,0,0,0.1), rgba(0,0,0,0.85));
+      background: linear-gradient(180deg, #0b0b0b 0%, #161616 100%);
 
     }
 
@@ -561,8 +582,6 @@
 
       max-width: var(--max-width);
 
-      height: 100%;
-
       margin: 0 auto;
 
       padding: 0 1.2rem;
@@ -571,7 +590,7 @@
 
       flex-direction: column;
 
-      justify-content: center;
+      justify-content: flex-start;
 
       gap: 1.8rem;
 
@@ -598,6 +617,375 @@
       font-size: 0.75rem;
 
       color: var(--accent-gold-soft);
+
+    }
+
+
+
+    .business-status {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 0.85rem;
+
+      width: fit-content;
+
+      max-width: 100%;
+
+      padding: 0.9rem 1rem;
+
+      border-radius: 1rem;
+
+      background: rgba(255, 255, 255, 0.05);
+
+      border: 1px solid rgba(255, 255, 255, 0.12);
+
+      box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
+
+    }
+
+
+
+    .business-status.is-open {
+
+      border-color: rgba(76, 210, 138, 0.4);
+
+      background: rgba(17, 46, 31, 0.6);
+
+    }
+
+
+
+    .business-status.is-closed {
+
+      border-color: rgba(255, 122, 122, 0.28);
+
+      background: rgba(58, 24, 24, 0.5);
+
+    }
+
+
+
+    .business-status-lamp {
+
+      width: 14px;
+
+      height: 14px;
+
+      border-radius: 50%;
+
+      background: #ff7a7a;
+
+      box-shadow: 0 0 0 6px rgba(255, 122, 122, 0.16), 0 0 18px rgba(255, 122, 122, 0.55);
+
+      flex-shrink: 0;
+
+      animation: statusPulse 1.8s ease-in-out infinite;
+
+    }
+
+
+
+    .business-status.is-open .business-status-lamp {
+
+      background: #4cd28a;
+
+      box-shadow: 0 0 0 6px rgba(76, 210, 138, 0.16), 0 0 18px rgba(76, 210, 138, 0.55);
+
+    }
+
+
+
+    .business-status-copy {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 0.16rem;
+
+    }
+
+
+
+    .business-status-title {
+
+      font-size: 0.98rem;
+
+      font-weight: 700;
+
+      color: var(--text-main);
+
+    }
+
+
+
+    .business-status-detail {
+
+      font-size: 0.82rem;
+
+      color: var(--text-sub);
+
+    }
+
+
+
+    .business-status-admin {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 0.7rem;
+
+      width: fit-content;
+
+      max-width: 100%;
+
+      padding: 0.95rem 1rem;
+
+      border-radius: 1rem;
+
+      background: rgba(255, 255, 255, 0.04);
+
+      border: 1px dashed rgba(255, 255, 255, 0.18);
+
+    }
+
+
+
+    .business-status-admin[hidden] {
+
+      display: none;
+
+    }
+
+
+
+    .business-status-admin-title {
+
+      font-size: 0.82rem;
+
+      font-weight: 700;
+
+      color: var(--accent-gold-soft);
+
+      letter-spacing: 0.04em;
+
+    }
+
+
+
+    .business-status-admin-head {
+
+      display: flex;
+
+      align-items: center;
+
+      justify-content: space-between;
+
+      gap: 0.8rem;
+
+    }
+
+
+
+    .business-status-admin-login,
+    .business-status-admin-panel {
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 0.7rem;
+
+    }
+
+
+
+    .business-status-admin-login[hidden],
+    .business-status-admin-panel[hidden] {
+
+      display: none;
+
+    }
+
+
+
+    .business-status-admin-label {
+
+      font-size: 0.78rem;
+
+      color: var(--text-sub);
+
+    }
+
+
+
+    .business-status-admin-login-row {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 0.55rem;
+
+    }
+
+
+
+    .business-status-admin-input {
+
+      min-width: 220px;
+
+      flex: 1 1 220px;
+
+      min-height: 42px;
+
+      padding: 0.65rem 0.85rem;
+
+      border-radius: 0.85rem;
+
+      border: 1px solid rgba(255, 255, 255, 0.14);
+
+      background: rgba(0, 0, 0, 0.28);
+
+      color: var(--text-main);
+
+      outline: none;
+
+    }
+
+
+
+    .business-status-admin-input:focus {
+
+      border-color: rgba(217, 164, 65, 0.5);
+
+      box-shadow: 0 0 0 3px rgba(217, 164, 65, 0.12);
+
+    }
+
+
+
+    .business-status-admin-actions {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 0.55rem;
+
+    }
+
+
+
+    .business-status-admin-btn {
+
+      border: 1px solid rgba(255, 255, 255, 0.16);
+
+      background: rgba(255, 255, 255, 0.04);
+
+      color: var(--text-main);
+
+      border-radius: 999px;
+
+      padding: 0.5rem 0.9rem;
+
+      min-height: 40px;
+
+      font-size: 0.82rem;
+
+      cursor: pointer;
+
+      transition: all 0.18s ease;
+
+    }
+
+
+
+    .business-status-admin-btn:hover {
+
+      border-color: rgba(255, 255, 255, 0.3);
+
+      transform: translateY(-1px);
+
+    }
+
+
+
+    .business-status-admin-btn--logout {
+
+      background: transparent;
+
+      color: var(--text-sub);
+
+    }
+
+
+
+    .business-status-admin-btn.is-active {
+
+      border-color: var(--accent-gold);
+
+      background: rgba(217, 164, 65, 0.16);
+
+      color: var(--accent-gold-soft);
+
+      font-weight: 700;
+
+    }
+
+
+
+    .business-status-admin-hint {
+
+      font-size: 0.76rem;
+
+      color: var(--text-sub);
+
+    }
+
+
+
+    .business-status-admin-message {
+
+      font-size: 0.76rem;
+
+      color: #ff9d9d;
+
+    }
+
+
+
+    .business-status-admin-message[hidden] {
+
+      display: none;
+
+    }
+
+
+
+    @keyframes statusPulse {
+
+      0%,
+      100% {
+
+        transform: scale(1);
+
+        opacity: 1;
+
+      }
+
+      50% {
+
+        transform: scale(1.18);
+
+        opacity: 0.82;
+
+      }
 
     }
 
@@ -788,6 +1176,20 @@
 
 
     .section-desc {
+
+      font-size: 0.92rem;
+
+      color: var(--text-sub);
+
+      max-width: 560px;
+
+    }
+
+
+
+    .section-note {
+
+      margin-top: 1rem;
 
       font-size: 0.92rem;
 
@@ -1003,11 +1405,9 @@
 
       @media (max-width: 640px) {
 
-      .hero {
+      .hero-media video {
 
-        height: 78vh;
-
-        min-height: 460px;
+        min-height: 240px;
 
       }
 
@@ -1037,8 +1437,6 @@
       body {
 
         font-size: 16px;
-
-        -webkit-text-size-adjust: 100%;
 
       }
 
@@ -1281,279 +1679,6 @@
       }
 
     }
-
-
-
-    /* 로또지니 섹션 */
-
-
-
-    .lotto-wrapper {
-
-      background: #111111;
-
-      border-radius: 1.2rem;
-
-      padding: 1.2rem;
-
-      border: 1px solid rgba(255,255,255,0.08);
-
-      box-shadow: 0 15px 40px rgba(0,0,0,0.55);
-
-      cursor: pointer;
-
-      transition: all 0.3s ease;
-
-    }
-
-
-
-    .lotto-wrapper:hover {
-
-      border-color: var(--accent-gold);
-
-      transform: translateY(-2px);
-
-      box-shadow: 0 20px 50px rgba(217, 164, 65, 0.2);
-
-    }
-
-
-
-    .lotto-info {
-
-      font-size: 0.86rem;
-
-      color: var(--text-sub);
-
-      margin-bottom: 0.6rem;
-
-    }
-
-
-
-    .lotto-preview {
-
-      position: relative;
-
-      width: 100%;
-
-      padding-top: 65%;
-
-      border-radius: 0.9rem;
-
-      overflow: hidden;
-
-      border: 1px solid rgba(255,255,255,0.12);
-
-      background: #050505;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-    }
-
-
-
-    .lotto-preview::after {
-
-      content: "클릭하여 전체 화면으로 보기";
-
-      position: absolute;
-
-      inset: 0;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      background: rgba(0, 0, 0, 0.7);
-
-      color: var(--accent-gold-soft);
-
-      font-size: 1.1rem;
-
-      font-weight: 600;
-
-      transition: all 0.3s ease;
-
-    }
-
-
-
-    .lotto-wrapper:hover .lotto-preview::after {
-
-      background: rgba(217, 164, 65, 0.15);
-
-    }
-
-
-
-    .lotto-preview iframe {
-
-      position: absolute;
-
-      inset: 0;
-
-      width: 100%;
-
-      height: 100%;
-
-      border: none;
-
-      opacity: 0.3;
-
-      pointer-events: none;
-
-    }
-
-
-
-    /* 로또지니 전체 화면 모달 */
-
-    .lotto-modal {
-
-      display: none;
-
-      position: fixed;
-
-      inset: 0;
-
-      z-index: 9999;
-
-      background: #000;
-
-      overflow: hidden;
-
-    }
-
-
-
-    .lotto-modal.active {
-
-      display: flex;
-
-      flex-direction: column;
-
-    }
-
-
-
-    .lotto-modal-header {
-
-      padding: 1rem 1.5rem;
-
-      background: rgba(0, 0, 0, 0.9);
-
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: space-between;
-
-      flex-shrink: 0;
-
-    }
-
-
-
-    .lotto-modal-title {
-
-      font-size: 1.2rem;
-
-      font-weight: 600;
-
-      color: var(--accent-gold-soft);
-
-    }
-
-
-
-    .lotto-modal-close {
-
-      width: 44px;
-
-      height: 44px;
-
-      border: 1px solid rgba(255, 255, 255, 0.2);
-
-      background: rgba(0, 0, 0, 0.5);
-
-      border-radius: 50%;
-
-      color: var(--text-main);
-
-      font-size: 1.5rem;
-
-      cursor: pointer;
-
-      display: flex;
-
-      align-items: center;
-
-      justify-content: center;
-
-      transition: all 0.2s ease;
-
-      -webkit-tap-highlight-color: transparent;
-
-      touch-action: manipulation;
-
-    }
-
-
-
-    .lotto-modal-close:hover {
-
-      background: var(--accent-gold);
-
-      border-color: var(--accent-gold);
-
-      color: #111;
-
-    }
-
-
-
-    .lotto-modal-content {
-
-      flex: 1;
-
-      width: 100%;
-
-      height: 100%;
-
-      position: relative;
-
-      overflow: hidden;
-
-    }
-
-
-
-    .lotto-modal-content iframe {
-
-      position: absolute;
-
-      inset: 0;
-
-      width: 100%;
-
-      height: 100%;
-
-      border: none;
-
-    }
-
-
-
     /* 상표 출원 정보 모달 */
 
     .trademark-modal {
@@ -1561,14 +1686,6 @@
       display: none;
 
       position: fixed;
-
-      top: 0;
-
-      left: 0;
-
-      right: 0;
-
-      bottom: 0;
 
       inset: 0;
 
@@ -1764,6 +1881,18 @@
 
 
 
+    .trademark-note {
+
+      color: var(--accent-gold-soft);
+
+      font-size: 0.9rem;
+
+      margin-top: 0.5rem;
+
+    }
+
+
+
     .info-item {
 
       display: flex;
@@ -1827,130 +1956,6 @@
       box-shadow: 0 4px 12px rgba(217, 164, 65, 0.4);
 
     }
-
-
-
-    /* 로또지니 홈 버튼 */
-
-    .lotto-home-btn {
-
-      position: fixed;
-
-      top: 5rem;
-
-      right: 1.5rem;
-
-      z-index: 10001;
-
-      width: 60px;
-
-      height: 60px;
-
-      border-radius: 50%;
-
-      background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-soft));
-
-      border: 2px solid rgba(255, 255, 255, 0.3);
-
-      box-shadow: 0 8px 30px rgba(217, 164, 65, 0.5);
-
-      display: none;
-
-      align-items: center;
-
-      justify-content: center;
-
-      cursor: pointer;
-
-      transition: all 0.3s ease;
-
-      -webkit-tap-highlight-color: transparent;
-
-      touch-action: manipulation;
-
-      animation: pulse 2s ease-in-out infinite;
-
-      pointer-events: auto;
-
-    }
-
-
-
-
-
-
-    .lotto-home-btn:hover {
-
-      transform: scale(1.1);
-
-      box-shadow: 0 12px 40px rgba(217, 164, 65, 0.7);
-
-    }
-
-
-
-    .lotto-home-btn svg {
-
-      width: 30px;
-
-      height: 30px;
-
-      fill: #111;
-
-    }
-
-
-
-    @keyframes pulse {
-
-      0%, 100% {
-
-        opacity: 1;
-
-        transform: scale(1);
-
-      }
-
-      50% {
-
-        opacity: 0.8;
-
-        transform: scale(1.05);
-
-      }
-
-    }
-
-
-
-    @media (max-width: 640px) {
-
-      .lotto-home-btn {
-
-        width: 56px;
-
-        height: 56px;
-
-        top: 1rem;
-
-        right: 1rem;
-
-      }
-
-
-
-      .lotto-home-btn svg {
-
-        width: 28px;
-
-        height: 28px;
-
-      }
-
-    }
-
-
-
     /* 공식 리뷰 바로가기 & 리뷰 갤러리 */
     /* TODO: 이미지 준비 후 활성화 예정 */
 
@@ -2298,6 +2303,48 @@
 
 
 
+    .phone-link {
+
+      display: inline-flex;
+
+      align-items: center;
+
+      gap: 0.45rem;
+
+      color: var(--accent-gold-soft);
+
+      font-weight: 600;
+
+    }
+
+
+
+    .phone-link svg {
+
+      width: 16px;
+
+      height: 16px;
+
+      stroke: currentColor;
+
+      fill: none;
+
+      stroke-width: 2;
+
+      flex-shrink: 0;
+
+    }
+
+
+
+    .phone-link:hover {
+
+      color: var(--accent-gold);
+
+    }
+
+
+
     .map-embed {
 
       border-radius: 1rem;
@@ -2514,6 +2561,18 @@
 
 
 
+    .footer-keywords {
+
+      margin-top: 10px;
+
+      font-size: 0.85rem;
+
+      color: #777;
+
+    }
+
+
+
     @media (max-width: 640px) {
 
       .footer-row {
@@ -2533,10 +2592,6 @@
 <body>
 
   <!-- 헤더 -->
-
-  <header>
-
-    <div class="nav-inner">
 
       <div class="brand">
 
@@ -2574,7 +2629,6 @@
 
           <li><a href="#gallery">매장 풍경</a></li>
 
-          <li><a href="#lotto">로또지니</a></li>
 
           <li><a href="#contact">오시는 길</a></li>
 
@@ -2592,11 +2646,15 @@
 
 
 
-  <!-- 히어로(영상 배너) -->
+  <!-- 홈 영상 -->
 
-  <section class="hero" id="home">
+  <section class="hero-media" id="home" aria-label="매장 소개 영상">
 
-    <video autoplay muted loop playsinline preload="auto" webkit-playsinline="true" x5-playsinline="true" x5-video-player-type="h5" x5-video-player-fullscreen="true">
+    <video id="heroVideo" autoplay muted loop preload="auto" webkit-playsinline="true" x5-playsinline="true" x5-video-player-type="h5" x5-video-player-fullscreen="true" aria-label="짜장나라 세종본점 매장 타임랩스 영상">
+
+      <track kind="captions" srclang="ko" src="assets/video/store-timelapse.ko.vtt" label="한국어 자막" default />
+
+      <track kind="descriptions" srclang="ko" src="assets/video/store-timelapse.desc.ko.vtt" label="한국어 영상 설명" />
 
       <source src="assets/video/store-timelapse.mp4.mp4" type="video/mp4" />
 
@@ -2606,7 +2664,13 @@
 
     </video>
 
-    <div class="hero-overlay"></div>
+  </section>
+
+
+
+  <!-- 히어로 소개 -->
+
+  <section class="hero">
 
 
 
@@ -2615,6 +2679,68 @@
       <div class="hero-badge">
 
         세종 중화요리 맛집 · 짜장나라 세종본점
+
+      </div>
+
+      <div class="business-status is-open" id="businessStatus" aria-live="polite">
+
+        <span class="business-status-lamp" aria-hidden="true"></span>
+
+        <div class="business-status-copy">
+
+          <strong class="business-status-title" id="businessStatusTitle">현재 영업 상태 확인 중</strong>
+
+          <span class="business-status-detail" id="businessStatusDetail">오전 10시 ~ 오후 8시 · 일요일 및 공휴일 휴무</span>
+
+        </div>
+
+      </div>
+
+      <div class="business-status-admin" id="businessStatusAdmin" hidden>
+
+        <div class="business-status-admin-login" id="businessStatusAdminLogin" hidden>
+
+          <div class="business-status-admin-title">관리자 인증</div>
+
+          <label class="business-status-admin-label" for="businessStatusPassword">비밀번호를 입력해야 관리자 제어가 열립니다</label>
+
+          <div class="business-status-admin-login-row">
+
+            <input id="businessStatusPassword" class="business-status-admin-input" type="password" inputmode="numeric" autocomplete="current-password" placeholder="관리자 비밀번호 입력" />
+
+            <button type="button" class="business-status-admin-btn" id="businessStatusLoginButton">확인</button>
+
+          </div>
+
+          <p class="business-status-admin-message" id="businessStatusAdminMessage" hidden>비밀번호가 올바르지 않습니다.</p>
+
+          <p class="business-status-admin-hint">관리자 접속용 `?admin=1` 페이지에서만 보입니다.</p>
+
+        </div>
+
+        <div class="business-status-admin-panel" id="businessStatusAdminPanel" hidden>
+
+          <div class="business-status-admin-head">
+
+            <div class="business-status-admin-title">관리자 수동 제어</div>
+
+            <button type="button" class="business-status-admin-btn business-status-admin-btn--logout" id="businessStatusLogoutButton">로그아웃</button>
+
+          </div>
+
+          <div class="business-status-admin-actions">
+
+            <button type="button" class="business-status-admin-btn" data-status-mode="auto">자동</button>
+
+            <button type="button" class="business-status-admin-btn" data-status-mode="open">강제 영업중</button>
+
+            <button type="button" class="business-status-admin-btn" data-status-mode="closed">강제 휴무</button>
+
+          </div>
+
+          <p class="business-status-admin-hint">현재 브라우저 세션에만 로그인 상태가 유지됩니다.</p>
+
+        </div>
 
       </div>
 
@@ -2642,13 +2768,12 @@
 
         <a href="#menu" class="btn btn-primary">대표 메뉴 보기</a>
 
-        <a href="#lotto" class="btn btn-outline">오늘의 행운번호 · 로또지니</a>
 
       </div>
 
       <div class="hero-meta">
 
-        영업시간: 오전 10시 ~ 오후 8시 · 세종특별자치시 집현중앙7로6,G동 158호
+        영업시간: 오전 10시 ~ 오후 8시 · 휴무일: 매주 일요일 및 법정 공휴일 · 세종특별자치시 집현중앙7로6,G동 158호
 
       </div>
 
@@ -2678,7 +2803,7 @@
 
         </p>
 
-        <p style="margin-top: 1rem; font-size: 0.92rem; color: var(--text-sub); max-width: 560px;">
+        <p class="section-note">
 
           진공반죽으로 만든 짜장면과 불향 가득한 짬뽕, 초미니탕수육 세트는
 
@@ -2706,7 +2831,7 @@
 
             <div class="menu-name">짜장면</div>
 
-            <div class="menu-price">8,000원</div>
+            <div class="menu-price">7,000원</div>
 
           </div>
 
@@ -2738,7 +2863,7 @@
 
             <div class="menu-name">짬뽕</div>
 
-            <div class="menu-price">8,000원</div>
+            <div class="menu-price">9,000원</div>
 
           </div>
 
@@ -2802,7 +2927,7 @@
 
             <div class="menu-name">미니탕수육</div>
 
-            <div class="menu-price">11,000원</div>
+            <div class="menu-price">12,000원</div>
 
           </div>
 
@@ -2834,7 +2959,7 @@
 
             <div class="menu-name">탕수육(중)</div>
 
-            <div class="menu-price">16,000원</div>
+            <div class="menu-price">17,000원</div>
 
           </div>
 
@@ -2898,7 +3023,7 @@
 
             <div class="menu-name">볶음밥</div>
 
-            <div class="menu-price">10,000원</div>
+            <div class="menu-price">9,000원</div>
 
           </div>
 
@@ -2930,7 +3055,7 @@
 
             <div class="menu-name">잡채밥</div>
 
-            <div class="menu-price">12,000원</div>
+            <div class="menu-price">10,000원</div>
 
           </div>
 
@@ -2945,41 +3070,6 @@
           <a href="order.html" class="menu-order-btn">주문하기</a>
 
         </article>
-
-
-
-        <!-- 메뉴 카드 9 -->
-
-        <article class="menu-card">
-
-          <div class="menu-image">
-
-            <img src="assets/images/menu-9(마파두부밥).jpg.jpg" alt="세종 마파두부밥 맛집 짜장나라 대표메뉴 마파두부밥" loading="eager" />
-
-          </div>
-
-          <div class="menu-meta">
-
-            <div class="menu-name">마파두부밥</div>
-
-            <div class="menu-price">10,000원</div>
-
-          </div>
-
-          <p class="menu-desc">
-
-            부드러운 두부와 매콤한 소스를 밥에 올린 마파두부밥.
-
-            밥도둑으로 유명한 인기 메뉴입니다.
-
-          </p>
-
-          <a href="order.html" class="menu-order-btn">주문하기</a>
-
-        </article>
-
-
-
         <!-- 메뉴 카드 10 -->
 
         <article class="menu-card">
@@ -2994,7 +3084,7 @@
 
             <div class="menu-name">제육덮밥</div>
 
-            <div class="menu-price">11,000원</div>
+            <div class="menu-price">10,000원</div>
 
           </div>
 
@@ -3026,7 +3116,7 @@
 
             <div class="menu-name">중화비빔밥</div>
 
-            <div class="menu-price">9,000원</div>
+            <div class="menu-price">10,000원</div>
 
           </div>
 
@@ -3058,7 +3148,7 @@
 
             <div class="menu-name">짜장밥</div>
 
-            <div class="menu-price">10,000원</div>
+            <div class="menu-price">8,000원</div>
 
           </div>
 
@@ -3239,9 +3329,16 @@
 
           <p>사업자번호: 308-15-02640</p>
 
-          <p>전화: 044-589-3888</p>
+          <p>
+            <a href="tel:0445893888" class="phone-link" aria-label="짜장나라 세종본점으로 전화 걸기">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.28a2 2 0 0 1 2.11-.45c.84.29 1.72.5 2.62.62A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <span>044-589-3888</span>
+            </a>
+          </p>
 
-          <p>도메인: www.짜장나라.com</p>
+          <p>도메인: 짜장나라.com</p>
 
           <br />
 
@@ -3249,7 +3346,7 @@
 
           <p>영업시간: 오전 10시 ~ 오후 8시</p>
 
-          <p>정기 휴무: 월 1회 (공지사항 안내)</p>
+          <p>휴무일: 매주 일요일 및 법정 공휴일</p>
 
         </div>
 
@@ -3322,97 +3419,6 @@
     </div>
 
   </section>
-
-
-
-  <!-- 로또지니 -->
-
-  <section id="lotto">
-
-    <div class="section-inner">
-
-      <div class="section-header">
-
-        <div class="section-eyebrow">LOTTO GENIE</div>
-
-        <h2 class="section-title">오늘의 행운번호 · 로또지니</h2>
-
-        <p class="section-desc">
-
-          식사 후 가볍게 즐기는 재미 요소로,  
-
-          로또 번호를 직접 뽑아볼 수 있는 "로또지니"를 제공합니다.
-
-          사행성을 부추기기보다는,  
-
-          식사 경험을 조금 더 즐겁게 만들어주는 재미있는 서비스로 운영합니다.
-
-        </p>
-
-      </div>
-
-
-
-      <div class="lotto-wrapper" id="lottoTrigger">
-
-        <p class="lotto-info">
-
-          ※ 로또 구매는 항상 책임감 있게, 과도한 지출 없이 즐겨주세요.
-
-        </p>
-
-        <div class="lotto-preview">
-
-          <!-- 형이 만든 로또 지니 Netlify 주소로 교체 -->
-
-          <iframe
-
-            src="https://superb-paprenjak-ac8d2f.netlify.app/"
-
-            title="로또지니"
-
-          ></iframe>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </section>
-
-
-
-  <!-- 로또지니 전체 화면 모달 -->
-
-  <div class="lotto-modal" id="lottoModal">
-
-    <div class="lotto-modal-header">
-
-      <div class="lotto-modal-title">로또지니</div>
-
-      <button class="lotto-modal-close" id="lottoModalClose" aria-label="닫기">×</button>
-
-    </div>
-
-    <div class="lotto-modal-content">
-
-      <iframe
-
-        src="https://superb-paprenjak-ac8d2f.netlify.app/"
-
-        title="로또지니"
-
-        allowfullscreen
-
-      ></iframe>
-
-    </div>
-
-  </div>
-
-
-
   <!-- 상표 출원 정보 모달 -->
   <div class="trademark-modal" id="trademarkModal">
     <div class="trademark-modal-header">
@@ -3446,28 +3452,11 @@
         <h2>추가 정보</h2>
         <div class="info-box">
           <p>상세한 상표 출원 정보는 markinfo.kr 사이트에서 확인하실 수 있습니다.</p>
-          <p style="color: var(--accent-gold-soft); font-size: 0.9rem; margin-top: 0.5rem;">※ 해당 사이트는 로그인이 필요할 수 있습니다.</p>
+          <p class="trademark-note">※ 해당 사이트는 로그인이 필요할 수 있습니다.</p>
         </div>
       </div>
     </div>
   </div>
-
-
-
-  <!-- 홈으로 돌아가기 버튼 (모달이 열릴 때만 표시) -->
-
-  <button class="lotto-home-btn" id="lottoHomeBtn" aria-label="홈으로 돌아가기">
-
-    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-
-      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
-
-    </svg>
-
-  </button>
-
-
-
   <!-- 공식 리뷰 바로가기 -->
 
   <section class="review-links">
@@ -3576,13 +3565,22 @@
 
           <p>상호: 짜장나라 세종본점</p>
 
-          <p>전화: 044-589-3888</p>
+          <p>
+            <a href="tel:0445893888" class="phone-link" aria-label="짜장나라 세종본점으로 전화 걸기">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.28a2 2 0 0 1 2.11-.45c.84.29 1.72.5 2.62.62A2 2 0 0 1 22 16.92z"></path>
+              </svg>
+              <span>044-589-3888</span>
+            </a>
+          </p>
 
           <p>주소: 세종특별자치시 집현중앙7로6,G동 158호</p>
 
           <p>영업시간: 오전 10시 ~ 오후 8시</p>
 
-          <p>도메인: www.짜장나라.com</p>
+          <p>휴무일: 매주 일요일 및 법정 공휴일</p>
+
+          <p>도메인: 짜장나라.com</p>
 
           <br />
 
@@ -3634,7 +3632,14 @@
 
         <span>대표자: 염혜리 · 사업자번호: 308-15-02640</span>
 
-        <span>전화: 044-589-3888</span>
+        <span>
+          <a href="tel:0445893888" class="phone-link" aria-label="짜장나라 세종본점으로 전화 걸기">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6A19.79 19.79 0 0 1 2.12 4.18 2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.12.9.33 1.78.62 2.62a2 2 0 0 1-.45 2.11L8 9.91a16 16 0 0 0 6.09 6.09l1.46-1.28a2 2 0 0 1 2.11-.45c.84.29 1.72.5 2.62.62A2 2 0 0 1 22 16.92z"></path>
+            </svg>
+            <span>044-589-3888</span>
+          </a>
+        </span>
 
       </div>
 
@@ -3658,7 +3663,7 @@
 
       </div>
 
-      <p style="margin-top: 10px; font-size: 0.85rem; color: #777;">
+      <p class="footer-keywords">
 
         세종맛집 · 세종짜장 · 세종짬뽕 · 세종중식 · 세종 배달맛집 · 세종 중국집 · 집현동 맛집 · 세종 중화요리 전문점
 
@@ -3828,7 +3833,7 @@
 
         button.addEventListener("click", function() {
 
-          const mapType = this.getAttribute("data-map");
+          const mapType = this.dataset.map;
 
 
 
@@ -3860,9 +3865,390 @@
 
 
 
+    const businessStatusStorageKey = "jjajangnara-business-status-mode";
+    const businessStatusAuthKey = "jjajangnara-business-status-auth";
+    const businessStatusAdminPassword = "13260";
+
+
+
+    function isBusinessStatusAdminMode() {
+
+      return new URLSearchParams(globalThis.location.search).get("admin") === "1";
+
+    }
+
+
+
+    function isBusinessStatusAuthenticated() {
+
+      try {
+
+        return globalThis.sessionStorage.getItem(businessStatusAuthKey) === "authenticated";
+
+      } catch (error) {
+
+        console.log("관리자 인증 상태를 읽지 못했습니다:", error);
+
+      }
+
+      return false;
+
+    }
+
+
+
+    function setBusinessStatusAuthenticated(isAuthenticated) {
+
+      try {
+
+        if (isAuthenticated) {
+
+          globalThis.sessionStorage.setItem(businessStatusAuthKey, "authenticated");
+          return;
+
+        }
+
+        globalThis.sessionStorage.removeItem(businessStatusAuthKey);
+
+      } catch (error) {
+
+        console.log("관리자 인증 상태를 저장하지 못했습니다:", error);
+
+      }
+
+    }
+
+
+
+    function getBusinessStatusMode() {
+
+      try {
+
+        const savedMode = globalThis.localStorage.getItem(businessStatusStorageKey);
+
+        if (savedMode === "open" || savedMode === "closed" || savedMode === "auto") {
+
+          return savedMode;
+
+        }
+
+      } catch (error) {
+
+        console.log("영업 상태 저장값을 읽지 못했습니다:", error);
+
+      }
+
+      return "auto";
+
+    }
+
+
+
+    function setBusinessStatusMode(mode) {
+
+      try {
+
+        globalThis.localStorage.setItem(businessStatusStorageKey, mode);
+
+      } catch (error) {
+
+        console.log("영업 상태 저장값을 저장하지 못했습니다:", error);
+
+      }
+
+    }
+
+
+
+    function updateBusinessStatusAdminUi() {
+
+      const adminPanel = document.getElementById("businessStatusAdmin");
+      const adminLogin = document.getElementById("businessStatusAdminLogin");
+      const adminControls = document.getElementById("businessStatusAdminPanel");
+      const adminMessage = document.getElementById("businessStatusAdminMessage");
+      const passwordInput = document.getElementById("businessStatusPassword");
+      const adminButtons = document.querySelectorAll(".business-status-admin-btn");
+      const isAdminMode = isBusinessStatusAdminMode();
+      const isAuthenticated = isBusinessStatusAuthenticated();
+      const currentMode = getBusinessStatusMode();
+
+      if (!adminPanel) {
+
+        return;
+
+      }
+
+      adminPanel.hidden = !isAdminMode;
+
+      if (adminLogin) {
+
+        adminLogin.hidden = !isAdminMode || isAuthenticated;
+
+      }
+
+      if (adminControls) {
+
+        adminControls.hidden = !isAdminMode || !isAuthenticated;
+
+      }
+
+      if (!isAuthenticated && adminMessage) {
+
+        adminMessage.hidden = true;
+
+      }
+
+      if (!isAuthenticated && passwordInput) {
+
+        passwordInput.value = "";
+
+      }
+
+      adminButtons.forEach((button) => {
+
+        button.classList.toggle("is-active", isAuthenticated && button.dataset.statusMode === currentMode);
+
+      });
+
+    }
+
+
+
+    function scrollToBusinessStatusAdminPanel() {
+
+      const adminPanel = document.getElementById("businessStatusAdmin");
+
+      if (!adminPanel) {
+
+        return;
+
+      }
+
+      const headerOffset = 80;
+      const elementPosition = adminPanel.getBoundingClientRect().top + globalThis.scrollY;
+      const offsetPosition = Math.max(elementPosition - headerOffset, 0);
+
+      globalThis.scrollTo({
+
+        top: offsetPosition,
+        behavior: "smooth",
+
+      });
+
+    }
+
+
+
+    function initBusinessStatusAdmin() {
+
+      const adminButtons = document.querySelectorAll(".business-status-admin-btn");
+      const loginButton = document.getElementById("businessStatusLoginButton");
+      const logoutButton = document.getElementById("businessStatusLogoutButton");
+      const passwordInput = document.getElementById("businessStatusPassword");
+      const adminMessage = document.getElementById("businessStatusAdminMessage");
+
+      function handleAdminLogin() {
+
+        if (!passwordInput) {
+
+          return;
+
+        }
+
+        const enteredPassword = passwordInput.value.trim();
+
+        if (enteredPassword !== businessStatusAdminPassword) {
+
+          if (adminMessage) {
+
+            adminMessage.hidden = false;
+
+          }
+
+          passwordInput.focus();
+          passwordInput.select();
+          return;
+
+        }
+
+        if (adminMessage) {
+
+          adminMessage.hidden = true;
+
+        }
+
+        setBusinessStatusAuthenticated(true);
+        updateBusinessStatusAdminUi();
+        updateBusinessStatusLamp();
+        globalThis.setTimeout(scrollToBusinessStatusAdminPanel, 40);
+
+      }
+
+      adminButtons.forEach((button) => {
+
+        button.addEventListener("click", function () {
+
+          const nextMode = this.dataset.statusMode;
+
+          if (!nextMode) {
+
+            return;
+
+          }
+
+          setBusinessStatusMode(nextMode);
+          updateBusinessStatusAdminUi();
+          updateBusinessStatusLamp();
+
+        });
+
+      });
+
+      if (loginButton) {
+
+        loginButton.addEventListener("click", handleAdminLogin);
+
+      }
+
+      if (passwordInput) {
+
+        passwordInput.addEventListener("keydown", function (event) {
+
+          if (event.key === "Enter") {
+
+            event.preventDefault();
+            handleAdminLogin();
+
+          }
+
+        });
+
+      }
+
+      if (logoutButton) {
+
+        logoutButton.addEventListener("click", function () {
+
+          setBusinessStatusAuthenticated(false);
+          updateBusinessStatusAdminUi();
+          updateBusinessStatusLamp();
+
+        });
+
+      }
+
+      updateBusinessStatusAdminUi();
+
+    }
+
+
+
+    function updateBusinessStatusLamp() {
+
+      const statusElement = document.getElementById("businessStatus");
+      const statusTitle = document.getElementById("businessStatusTitle");
+      const statusDetail = document.getElementById("businessStatusDetail");
+      const overrideMode = getBusinessStatusMode();
+
+      if (!statusElement || !statusTitle || !statusDetail) {
+
+        return;
+
+      }
+
+      const now = new Date();
+      const seoulParts = new Intl.DateTimeFormat("en-US", {
+        timeZone: "Asia/Seoul",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        weekday: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+        hourCycle: "h23",
+      }).formatToParts(now);
+
+      const getPart = (type) => seoulParts.find((part) => part.type === type)?.value ?? "";
+
+      const year = getPart("year");
+      const month = getPart("month");
+      const day = getPart("day");
+      const weekday = getPart("weekday");
+      const hour = Number(getPart("hour"));
+      const minute = Number(getPart("minute"));
+      const todayKey = `${year}-${month}-${day}`;
+      const monthDayKey = `${month}-${day}`;
+      const currentMinutes = hour * 60 + minute;
+      const openMinutes = 10 * 60;
+      const closeMinutes = 20 * 60;
+
+      const fixedHolidayKeys = new Set([
+        "01-01",
+        "03-01",
+        "05-05",
+        "06-06",
+        "08-15",
+        "10-03",
+        "10-09",
+        "12-25",
+      ]);
+
+      // 변동 공휴일은 해마다 달라지므로 필요할 때 YYYY-MM-DD 형식으로 추가하세요.
+      const extraHolidayKeys = new Set([]);
+
+      const isSunday = weekday === "Sun";
+      const isHoliday = fixedHolidayKeys.has(monthDayKey) || extraHolidayKeys.has(todayKey);
+      const isOpen = !isSunday && !isHoliday && currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+
+      if (overrideMode === "open") {
+        statusElement.classList.add("is-open");
+        statusElement.classList.remove("is-closed");
+        statusTitle.textContent = "현재 영업중";
+        statusDetail.textContent = "관리자 설정으로 영업중 표시중 · 자동 판정 일시 중지";
+        return;
+      }
+
+      if (overrideMode === "closed") {
+        statusElement.classList.add("is-closed");
+        statusElement.classList.remove("is-open");
+        statusTitle.textContent = "오늘은 휴무일";
+        statusDetail.textContent = "관리자 설정으로 휴무 표시중 · 자동 판정 일시 중지";
+        return;
+      }
+
+      statusElement.classList.toggle("is-open", isOpen);
+      statusElement.classList.toggle("is-closed", !isOpen);
+
+      if (isOpen) {
+        statusTitle.textContent = "현재 영업중";
+        statusDetail.textContent = "오전 10시 ~ 오후 8시 영업 · 지금 바로 주문 가능합니다";
+        return;
+      }
+
+      if (isSunday) {
+        statusTitle.textContent = "오늘은 휴무일";
+        statusDetail.textContent = "매주 일요일 정기 휴무입니다";
+        return;
+      }
+
+      if (isHoliday) {
+        statusTitle.textContent = "오늘은 휴무일";
+        statusDetail.textContent = "법정 공휴일은 쉬어갑니다";
+        return;
+      }
+
+      if (currentMinutes < openMinutes) {
+        statusTitle.textContent = "영업 시작 전";
+        statusDetail.textContent = "오전 10시에 영업을 시작합니다";
+        return;
+      }
+
+      statusTitle.textContent = "영업 종료";
+      statusDetail.textContent = "오전 10시에 다시 영업을 시작합니다";
+    }
     // 비디오 재생 강제 (모바일 대응)
 
-    const heroVideo = document.querySelector(".hero video");
+    const heroVideo = document.getElementById("heroVideo");
 
     if (heroVideo) {
 
@@ -3893,146 +4279,20 @@
 
 
     // 상표 출원 정보는 trademark-info.html 파일로 직접 링크됨
-
-
-
-    // 로또지니 전체 화면 모달
-
-    const lottoTrigger = document.getElementById("lottoTrigger");
-
-    const lottoModal = document.getElementById("lottoModal");
-
-    const lottoModalClose = document.getElementById("lottoModalClose");
-
-    const lottoHomeBtn = document.getElementById("lottoHomeBtn");
-
-
-
-    function closeLottoModal() {
-
-      if (lottoModal) {
-
-        if (lottoHomeBtn) {
-
-          lottoHomeBtn.style.display = "none";
-
-          lottoHomeBtn.style.visibility = "hidden";
-
-          lottoHomeBtn.style.opacity = "0";
-
-        }
-
-        lottoModal.classList.remove("active");
-
-        document.body.style.overflow = "";
-
-      }
-
-    }
-
-
-
-    function goToHome() {
-
-      closeLottoModal();
-
-      window.scrollTo({
-
-        top: 0,
-
-        behavior: "smooth"
-
-      });
-
-    }
-
-
-
-    if (lottoTrigger && lottoModal && lottoModalClose) {
-
-      // 모달 열기
-
-      lottoTrigger.addEventListener("click", function() {
-
-        lottoModal.classList.add("active");
-
-        document.body.style.overflow = "hidden";
-
-        // 홈 버튼 표시 (약간의 지연을 두어 모달이 먼저 렌더링되도록)
-
-        setTimeout(function() {
-
-          if (lottoHomeBtn) {
-
-            lottoHomeBtn.style.display = "flex";
-
-            lottoHomeBtn.style.visibility = "visible";
-
-            lottoHomeBtn.style.opacity = "1";
-
-          }
-
-        }, 100);
-
-      });
-
-
-
-      // 모달 닫기
-
-      lottoModalClose.addEventListener("click", closeLottoModal);
-
-
-
-      // 홈 버튼 클릭
-
-      if (lottoHomeBtn) {
-
-        lottoHomeBtn.addEventListener("click", goToHome);
-
-      }
-
-
-
-      // ESC 키로 모달 닫기
-
-      document.addEventListener("keydown", function(e) {
-
-        if (e.key === "Escape" && lottoModal.classList.contains("active")) {
-
-          closeLottoModal();
-
-        }
-
-      });
-
-
-
-      // 모달 배경 클릭 시 닫기 (선택사항)
-
-      lottoModal.addEventListener("click", function(e) {
-
-        if (e.target === lottoModal) {
-
-          closeLottoModal();
-
-        }
-
-      });
-
-    }
-
-
-
     // 페이지 로드 시 지도 초기화
 
-    window.addEventListener("DOMContentLoaded", function() {
+    globalThis.addEventListener("DOMContentLoaded", function() {
+
+      initBusinessStatusAdmin();
+      updateBusinessStatusLamp();
 
       initNaverMap();
 
       initKakaoMap();
 
       initMapTabs();
+
+      globalThis.setInterval(updateBusinessStatusLamp, 60000);
 
     });
 

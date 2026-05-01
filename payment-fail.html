@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>짜장나라 세종본점 | 결제 실패</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: #0f1115;
+      color: #e7e9ee;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+    }
+    .card {
+      width: min(640px, 100%);
+      background: #171a21;
+      border: 1px solid #2a2f3a;
+      border-radius: 18px;
+      padding: 28px;
+    }
+    h1 { margin: 0 0 12px; }
+    p { color: #a8adba; line-height: 1.7; }
+    .error-box {
+      margin-top: 18px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 107, 95, 0.35);
+      background: #5a1f1a;
+      color: #ffffff;
+      line-height: 1.7;
+    }
+    .actions { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid #2a2f3a;
+      background: #111318;
+      color: #e7e9ee;
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>결제가 완료되지 않았습니다</h1>
+    <p>결제창에서 취소되었거나 승인이 실패했습니다. 내용을 확인한 뒤 다시 시도해 주세요.</p>
+    <div id="errorBox" class="error-box">실패 사유를 불러오는 중입니다.</div>
+    <div class="actions">
+      <a class="btn" href="/order.html">주문 페이지로 돌아가기</a>
+      <a class="btn" href="/">메인으로 돌아가기</a>
+    </div>
+  </main>
+  <script>
+    const params = new URLSearchParams(globalThis.location.search);
+    const code = params.get("code") || "UNKNOWN";
+    const message = params.get("message") || "알 수 없는 오류가 발생했습니다.";
+    document.getElementById("errorBox").textContent = `오류 코드: ${code} / 사유: ${message}`;
+  </script>
+</body>
+</html>

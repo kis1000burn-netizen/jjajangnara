@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>짜장나라 세종본점 | 결제 완료</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --card: #171a21;
+      --line: #2a2f3a;
+      --text: #e7e9ee;
+      --muted: #a8adba;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", sans-serif;
+    }
+    .card {
+      width: min(680px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+    h1 { margin: 0 0 12px; font-size: 28px; }
+    p { line-height: 1.7; color: var(--muted); }
+    .status {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      border: 1px solid rgba(46, 204, 113, 0.35);
+      background: #184d33;
+      color: #ffffff;
+      line-height: 1.7;
+    }
+    .status.error {
+      border-color: rgba(255, 107, 95, 0.35);
+      background: #5a1f1a;
+    }
+    .summary {
+      margin-top: 18px;
+      display: grid;
+      gap: 10px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+    }
+    .summary-row strong { color: var(--text); }
+    .actions {
+      margin-top: 22px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0 16px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #111318;
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>결제 확인 중입니다</h1>
+    <p>토스 결제가 승인되면 주문이 자동으로 접수됩니다. 잠시만 기다려 주세요.</p>
+    <div id="statusBox" class="status">결제 승인 요청을 확인하고 있습니다.</div>
+    <div id="summaryBox" class="summary" hidden></div>
+    <div class="actions">
+      <a class="btn" href="/">메인으로 돌아가기</a>
+      <a class="btn" href="/order.html">주문 페이지로 돌아가기</a>
+    </div>
+  </main>
+  <script type="module">
+    const won = (value) => Number(value).toLocaleString("ko-KR") + "원";
+    const pendingOrderStoragePrefix = "jjajangnara-pending-order:";
+    const submittedOrderStoragePrefix = "jjajangnara-submitted-order:";
+
+    function setStatus(message, isError = false) {
+      const statusBox = document.getElementById("statusBox");
+      statusBox.textContent = message;
+      statusBox.classList.toggle("error", isError);
+    }
+
+    function encodeFormBody(data) {
+      return new URLSearchParams(data).toString();
+    }
+
+    function buildOrderSummary(items) {
+      return items.map((item) => `${item.name} / ${item.detail || "구성 없음"} / ${won(item.price)}`).join(" || ");
+    }
+
+    async function submitOrderForm(orderData, paymentData) {
+      const response = await fetch("/", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: encodeFormBody({
+          "form-name": "jjajangnara-order",
+          order_type: orderData.cart.some((item) => item.type === "set") ? "set+single mixed" : "single only",
+          order_summary: buildOrderSummary(orderData.cart),
+          order_total: won(orderData.total),
+          utensils: orderData.utensils,
+          address: orderData.address,
+          phone: orderData.phone,
+          request: orderData.request || "없음",
+          submitted_at: orderData.date,
+          payment_key: paymentData.paymentKey,
+          payment_order_id: paymentData.orderId,
+          payment_method: paymentData.method,
+          payment_status: paymentData.status,
+          payment_requested_amount: String(paymentData.totalAmount),
+          payment_approved_at: paymentData.approvedAt || "",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("주문서 저장에 실패했습니다.");
+      }
+    }
+
+    async function confirmPayment(paymentKey, orderId, amount) {
+      const response = await fetch("/.netlify/functions/toss-confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ paymentKey, orderId, amount }),
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || "결제 승인 확인에 실패했습니다.");
+      }
+
+      return result;
+    }
+
+    function renderSummary(orderData, paymentData) {
+      const summaryBox = document.getElementById("summaryBox");
+      summaryBox.hidden = false;
+      summaryBox.innerHTML = `
+        <div class="summary-row"><span>주문번호</span><strong>${paymentData.orderId}</strong></div>
+        <div class="summary-row"><span>결제금액</span><strong>${won(paymentData.totalAmount)}</strong></div>
+        <div class="summary-row"><span>연락처</span><strong>${orderData.phone}</strong></div>
+        <div class="summary-row"><span>배달주소</span><strong>${orderData.address}</strong></div>
+      `;
+    }
+
+    const params = new URLSearchParams(globalThis.location.search);
+      const paymentKey = params.get("paymentKey");
+      const orderId = params.get("orderId");
+      const amount = params.get("amount");
+
+      if (!paymentKey || !orderId || !amount) {
+        setStatus("결제 완료 정보가 부족합니다. 주문 페이지에서 다시 시도해 주세요.", true);
+        throw new Error("MISSING_PAYMENT_PARAMS");
+      }
+
+      const storedOrder = localStorage.getItem(`${pendingOrderStoragePrefix}${orderId}`);
+      if (!storedOrder) {
+        throw new Error("MISSING_PENDING_ORDER");
+      }
+
+      const orderData = JSON.parse(storedOrder);
+      const alreadySubmitted = localStorage.getItem(`${submittedOrderStoragePrefix}${orderId}`) === "done";
+
+      try {
+        const paymentData = await confirmPayment(paymentKey, orderId, amount);
+
+        if (!alreadySubmitted) {
+          await submitOrderForm(orderData, paymentData);
+          localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
+        }
+
+        localStorage.removeItem(`${pendingOrderStoragePrefix}${orderId}`);
+        setStatus("결제 승인과 주문 접수가 모두 완료되었습니다. 매장에서 확인 후 연락드릴 예정입니다.");
+        renderSummary(orderData, paymentData);
+      } catch (error) {
+        console.error(error);
+        setStatus(error.message || "결제 확인 중 오류가 발생했습니다.", true);
+      }
+
+    try {
+      if (!paymentKey || !orderId || !amount) {
+        setStatus("결제 완료 정보가 부족합니다. 주문 페이지에서 다시 시도해 주세요.", true);
+      } else {
+        const storedOrder = localStorage.getItem(`${pendingOrderStoragePrefix}${orderId}`);
+
+        if (storedOrder) {
+          const orderData = JSON.parse(storedOrder);
+          const alreadySubmitted = localStorage.getItem(`${submittedOrderStoragePrefix}${orderId}`) === "done";
+          const paymentData = await confirmPayment(paymentKey, orderId, amount);
+
+          if (!alreadySubmitted) {
+            await submitOrderForm(orderData, paymentData);
+            localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
+          }
+
+          localStorage.removeItem(`${pendingOrderStoragePrefix}${orderId}`);
+          setStatus("결제 승인과 주문 접수가 모두 완료되었습니다. 매장에서 확인 후 연락드릴 예정입니다.");
+          renderSummary(orderData, paymentData);
+        } else {
+          setStatus("주문 정보가 만료되었거나 확인되지 않습니다. 매장으로 전화 문의해 주세요. 044-589-3888", true);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+      setStatus(error.message || "결제 확인 중 오류가 발생했습니다.", true);
+    }
+  </script>
+</body>
+</html>

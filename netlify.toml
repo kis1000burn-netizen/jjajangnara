@@ -3,6 +3,9 @@
 [build]
   # 빌드 명령어 (정적 사이트이므로 불필요)
   # publish = "."
+
+[functions]
+  directory = "netlify/functions"
   
 # 헤더 설정 (선택사항)
 [[headers]]
@@ -19,6 +22,16 @@
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
     Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/payment-success.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/payment-fail.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
 
 # 리다이렉트 설정 (필요시)
 # [[redirects]]

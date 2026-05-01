@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>짜장나라 세트 빌더</title>
+  <style>
+    :root{
+      --bg:#0f0f10; --card:#17181a; --card2:#1e2023;
+      --line:#2a2d31; --text:#e9ecef; --muted:#a9b0b7;
+      --brand:#ff4d4f; --ok:#22c55e; --warn:#f59e0b;
+      --radius:14px;
+    }
+    body{ margin:0; font-family:system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:#0b0c0d; color:var(--text);}
+    header{
+      position:sticky; top:0; z-index:10;
+      background:linear-gradient(180deg, #0b0c0d 0%, rgba(11,12,13,.85) 100%);
+      backdrop-filter: blur(6px);
+      padding:14px 16px; border-bottom:1px solid var(--line);
+      display:flex; align-items:center; gap:10px;
+    }
+    header .badge{ font-size:12px; padding:4px 8px; background:var(--card2); border:1px solid var(--line); border-radius:999px; color:var(--muted);}
+    header h1{ font-size:18px; margin:0; font-weight:800; letter-spacing:-.3px;}
+    header .price{ margin-left:auto; font-weight:800; font-size:16px;}
+    main{ max-width:1080px; margin:0 auto; padding:16px;}
+    .section{
+      background:var(--card); border:1px solid var(--line);
+      border-radius:var(--radius); padding:14px; margin-bottom:14px;
+    }
+    .section h2{ margin:0 0 10px; font-size:15px;}
+    .section p{ margin:6px 0 0; color:var(--muted); font-size:13px; line-height:1.5;}
+    
+    .grid{
+      display:grid; grid-template-columns:repeat(3, 1fr);
+      gap:10px; margin-top:10px;
+    }
+    @media (max-width:900px){ .grid{ grid-template-columns:repeat(2, 1fr);} }
+    @media (max-width:520px){ .grid{ grid-template-columns:1fr;} }
+    .item{
+      background:var(--card2); border:1px solid var(--line);
+      border-radius:12px; padding:12px;
+      display:flex; flex-direction:column; gap:8px;
+      cursor:pointer; transition:.15s transform, .15s border, .15s background;
+      min-height:110px;
+    }
+    .item:hover{ transform:translateY(-2px); border-color:#3a3f46; }
+    .item.selected{ border-color:var(--ok); box-shadow:0 0 0 2px rgba(34,197,94,.12) inset; }
+    .item .title{ font-weight:800; font-size:15px;}
+    .item .meta{ display:flex; gap:6px; flex-wrap:wrap; font-size:12px; color:var(--muted);}
+    .chip{ font-size:11px; padding:3px 6px; border-radius:999px; background:#111214; border:1px solid var(--line); color:var(--muted);}
+    .chip.req{ color:#fff; background:#1a1313; border-color:#3a1c1c;}
+    .chip.add{ color:#fff; background:#131a13; border-color:#1e3a1e;}
+    .qty{
+      margin-top:auto; display:flex; align-items:center; gap:6px;
+    }
+    .qty button{
+      width:30px; height:30px; border-radius:8px; border:1px solid var(--line);
+      background:#0f1012; color:#fff; font-weight:800; cursor:pointer;
+    }
+    .qty input{
+      width:40px; text-align:center; background:#0f1012; color:#fff;
+      border:1px solid var(--line); border-radius:8px; height:30px; font-weight:700;
+    }
+    .hint{ font-size:12px; color:var(--muted); margin-top:6px;}
+    .summary{
+      display:grid; grid-template-columns:1.2fr .8fr; gap:12px;
+    }
+    @media (max-width:720px){ .summary{ grid-template-columns:1fr;} }
+    .box{
+      background:#0f1012; border:1px dashed var(--line); border-radius:12px; padding:10px; min-height:80px;
+      font-size:13px; color:#d7dbe0;
+    }
+    .box .row{ display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px dashed #202327;}
+    .box .row:last-child{ border-bottom:none;}
+    .tag-warn{ color:var(--warn); font-weight:800; }
+    .tag-ok{ color:var(--ok); font-weight:800; }
+    .actions{
+      position:sticky; bottom:0; z-index:20;
+      background:linear-gradient(0deg, #0b0c0d 0%, rgba(11,12,13,.6) 100%);
+      padding:10px 16px; border-top:1px solid var(--line);
+      display:flex; gap:8px;
+    }
+    .btn{
+      flex:1; height:46px; border-radius:12px; border:1px solid var(--line);
+      background:#121315; color:#fff; font-weight:900; cursor:pointer; font-size:15px;
+    }
+    .btn.primary{ background:#fff; color:#000; border-color:#fff; }
+    .btn.ghost{ background:transparent; color:#fff; }
+    .btn:disabled{ opacity:.45; cursor:not-allowed; }
+    .small{ font-size:12px; color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="badge" id="setBadge">세트</div>
+    <h1 id="setTitle">세트 선택</h1>
+    <div class="price" id="basePrice">0원</div>
+  </header>
+  <main>
+    <section class="section" id="rulesSection">
+      <h2>세트 구성 규칙</h2>
+      <p id="rulesText"></p>
+      <p class="hint">※ 아래에서 "부페식"으로 골라 담으면 자동으로 세트 가격에 옵션만 추가 계산됩니다.</p>
+    </section>
+    <section class="section">
+      <h2>1) 필수 구성: 탕수육</h2>
+      <div class="grid" id="tangGrid"></div>
+      <div class="hint">필수 고정입니다. 수량은 세트당 1개로 자동 포함</div>
+    </section>
+    <section class="section">
+      <h2>2) 메인 선택(부페식)</h2>
+      <div class="grid" id="mainGrid"></div>
+      <div class="hint" id="mainHint"></div>
+    </section>
+    <section class="section">
+      <h2>3) 옵션 선택</h2>
+      <div class="grid" id="optGrid"></div>
+      <div class="hint">옵션은 메인 선택과 무관하게 추가 가능합니다.</div>
+    </section>
+    <section class="section summary">
+      <div>
+        <h2>내가 담은 구성</h2>
+        <div class="box" id="pickedBox"></div>
+      </div>
+      <div>
+        <h2>가격 계산</h2>
+        <div class="box" id="priceBox"></div>
+        <p class="small">* 세트 기본가격 + 옵션추가금만 계산됩니다.</p>
+      </div>
+    </section>
+  </main>
+  <div class="actions">
+    <button class="btn ghost" id="btnReset">초기화</button>
+    <button class="btn primary" id="btnDone" disabled>선택완료 · 주문페이지로</button>
+  </div>
+<script>
+/** =========================
+ *  세트 정의
+ * ========================= */
+const SETS = {
+  single: {
+    name: "혼밥세트",
+    basePrice: 16000,
+    tang: { title:"초미니탕수육", qty:1 },
+    mainLimit: 1,
+    rules: [
+      "필수: 초미니탕수육 1개",
+      "메인 1개 선택 (짜장 또는 짬뽕 기본)",
+      "곱빼기 +1,000원 / 짜장소스 추가 +1,000원",
+      "면 → 볶음밥/마파두부밥/중화비빔밥 변경 +1,000원",
+      "면 → 제육덮밥 변경 +2,000원",
+      "면 → 잡채밥 변경 +3,000원"
+    ]
+  },
+  couple: {
+    name: "달달커플세트",
+    basePrice: 22000,
+    tang: { title:"초미니탕수육", qty:1 },
+    mainLimit: 2,
+    rules: [
+      "필수: 초미니탕수육 1개",
+      "메인 2개 선택 (짜장/짬뽕 기본)",
+      "옵션은 각 메인에 적용 가능",
+      "곱빼기 +1,000원 / 짜장소스 추가 +1,000원",
+      "면 변경 추가금 동일"
+    ]
+  },
+  family: {
+    name: "패밀리세트",
+    basePrice: 31000,
+    tang: { title:"미니탕수육", qty:1 },
+    mainLimit: 3,
+    rules: [
+      "필수: 미니탕수육 1개",
+      "메인 3개 선택 (짜장/짬뽕 기본)",
+      "옵션은 각 메인에 적용 가능",
+      "곱빼기 +1,000원 / 짜장소스 추가 +1,000원",
+      "면 변경 추가금 동일"
+    ]
+  }
+};
+const MAIN_ITEMS = [
+  { id:"jjajang", title:"짜장면", baseType:"noodle" },
+  { id:"jjambbong", title:"짬뽕", baseType:"noodle" }
+];
+const RICE_UPGRADES = [
+  { id:"bokkeumbap", title:"볶음밥으로 변경", add:1000 },
+  { id:"mapa", title:"마파두부밥으로 변경", add:1000 },
+  { id:"bibim", title:"중화비빔밥으로 변경", add:1000 },
+  { id:"jeyuk", title:"제육덮밥으로 변경", add:2000 },
+  { id:"japchae", title:"잡채밥으로 변경", add:3000 }
+];
+const OPTIONS = [
+  { id:"gop", title:"곱빼기", add:1000 },
+  { id:"sauce", title:"짜장소스 추가", add:1000 }
+];
+/** =========================
+ *  URL에서 세트 타입 읽기
+ * ========================= */
+const params = new URLSearchParams(location.search);
+const setType = params.get("type") || "single";
+const SET = SETS[setType] || SETS.single;
+/** =========================
+ *  상태
+ * ========================= */
+let mainsPicked = [];  // [{mainId, upgradeId|null, opts:{gop:boolean, sauce:boolean}}]
+/** =========================
+ *  렌더 기본 UI
+ * ========================= */
+const elSetTitle = document.getElementById("setTitle");
+const elBasePrice = document.getElementById("basePrice");
+const elRulesText = document.getElementById("rulesText");
+const elSetBadge = document.getElementById("setBadge");
+const elMainHint = document.getElementById("mainHint");
+elSetTitle.textContent = SET.name + " 부페식 선택";
+elBasePrice.textContent = SET.basePrice.toLocaleString() + "원";
+elSetBadge.textContent = setType === "single" ? "혼밥" : setType === "couple" ? "커플" : "패밀리";
+elRulesText.innerHTML = SET.rules.map(r=>`• ${r}`).join("<br>");
+elMainHint.textContent = `메인을 ${SET.mainLimit}개 선택하세요. (현재 0개 선택)`;
+/** Tang fixed render */
+const tangGrid = document.getElementById("tangGrid");
+tangGrid.innerHTML = `
+  <div class="item selected" style="cursor:default;">
+    <div class="title">${SET.tang.title}</div>
+    <div class="meta">
+      <span class="chip req">필수 고정</span>
+      <span class="chip">수량 ${SET.tang.qty}개</span>
+    </div>
+  </div>
+`;
+/** Main items render */
+const mainGrid = document.getElementById("mainGrid");
+function renderMainGrid(){
+  mainGrid.innerHTML = "";
+  MAIN_ITEMS.forEach(mi=>{
+    const count = mainsPicked.filter(m=>m.mainId===mi.id).length;
+    const card = document.createElement("div");
+    card.className = "item";
+    card.innerHTML = `
+      <div class="title">${mi.title}</div>
+      <div class="meta">
+        <span class="chip">부페식 담기</span>
+        <span class="chip">${count}개 담음</span>
+      </div>
+      <div class="qty">
+        <button data-act="minus" data-id="${mi.id}">-</button>
+        <input readonly value="${count}" />
+        <button data-act="plus" data-id="${mi.id}">+</button>
+      </div>
+    `;
+    mainGrid.appendChild(card);
+  });
+  elMainHint.textContent = `메인을 ${SET.mainLimit}개 선택하세요. (현재 ${mainsPicked.length}개 선택)`;
+}
+/** Options render (applies per main after picking) */
+const optGrid = document.getElementById("optGrid");
+function renderOptGrid(){
+  optGrid.innerHTML = "";
+  // 밥 변경(업그레이드) 선택
+  const upgradeCard = document.createElement("div");
+  upgradeCard.className = "item";
+  upgradeCard.style.gridColumn = "1 / -1";
+  upgradeCard.innerHTML = `
+    <div class="title">면 → 밥/덮밥 변경(메인별 1개 선택)</div>
+    <div class="meta">
+      ${RICE_UPGRADES.map(u=>`<span class="chip add">${u.title} (+${u.add.toLocaleString()}원)</span>`).join("")}
+    </div>
+    <div class="hint">메인을 담은 뒤, 아래 '내가 담은 구성'에서 각 메인에 적용하세요.</div>
+  `;
+  optGrid.appendChild(upgradeCard);
+  // 공통 옵션 안내 카드
+  const optCard = document.createElement("div");
+  optCard.className = "item";
+  optCard.style.gridColumn = "1 / -1";
+  optCard.innerHTML = `
+    <div class="title">곱빼기/짜장소스 추가(메인별 적용)</div>
+    <div class="meta">
+      ${OPTIONS.map(o=>`<span class="chip add">${o.title} (+${o.add.toLocaleString()}원)</span>`).join("")}
+    </div>
+    <div class="hint">메인을 담은 뒤, 아래 '내가 담은 구성'에서 체크하세요.</div>
+  `;
+  optGrid.appendChild(optCard);
+}
+/** Picked box render */
+const pickedBox = document.getElementById("pickedBox");
+function renderPickedBox(){
+  if(mainsPicked.length===0){
+    pickedBox.innerHTML = `<div class="small">아직 담은 메인이 없습니다. 위에서 메인을 부페식으로 담아주세요.</div>`;
+    return;
+  }
+  pickedBox.innerHTML = mainsPicked.map((m, idx)=>{
+    const mainTitle = MAIN_ITEMS.find(x=>x.id===m.mainId)?.title || m.mainId;
+    const upgrade = RICE_UPGRADES.find(x=>x.id===m.upgradeId);
+    const upgradeText = upgrade ? `${upgrade.title} (+${upgrade.add.toLocaleString()}원)` : "기본(면)";
+    const gop = m.opts.gop ? "곱빼기(+1,000)" : "곱빼기 없음";
+    const sauce = m.opts.sauce ? "짜장소스 추가(+1,000)" : "짜장소스 없음";
+    return `
+      <div class="row">
+        <div>
+          <b>${idx+1}. ${mainTitle}</b><br>
+          <select data-kind="upgrade" data-idx="${idx}">
+            <option value="">기본(면)</option>
+            ${RICE_UPGRADES.map(u=>`
+              <option value="${u.id}" ${m.upgradeId===u.id?"selected":""}>
+                ${u.title} (+${u.add.toLocaleString()}원)
+              </option>`).join("")}
+          </select>
+          <div style="margin-top:6px;">
+            <label><input type="checkbox" data-kind="gop" data-idx="${idx}" ${m.opts.gop?"checked":""}/> 곱빼기 (+1,000원)</label>
+            <br>
+            <label><input type="checkbox" data-kind="sauce" data-idx="${idx}" ${m.opts.sauce?"checked":""}/> 짜장소스 추가 (+1,000원)</label>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div class="small">${upgradeText}</div>
+          <div class="small">${gop}</div>
+          <div class="small">${sauce}</div>
+          <button data-kind="removeMain" data-idx="${idx}" style="margin-top:6px; font-size:12px; padding:4px 6px; border-radius:6px; border:1px solid var(--line); background:#0f1012; color:#fff; cursor:pointer;">삭제</button>
+        </div>
+      </div>
+    `;
+  }).join("");
+}
+/** Price box render */
+const priceBox = document.getElementById("priceBox");
+function renderPriceBox(){
+  const base = SET.basePrice;
+  let addTotal = 0;
+  mainsPicked.forEach(m=>{
+    const upgrade = RICE_UPGRADES.find(x=>x.id===m.upgradeId);
+    if(upgrade) addTotal += upgrade.add;
+    if(m.opts.gop) addTotal += 1000;
+    if(m.opts.sauce) addTotal += 1000;
+  });
+  const total = base + addTotal;
+  priceBox.innerHTML = `
+    <div class="row"><span>세트 기본가격</span><b>${base.toLocaleString()}원</b></div>
+    <div class="row"><span>옵션 추가금</span><b>+ ${addTotal.toLocaleString()}원</b></div>
+    <div class="row"><span><b>총 결제금액</b></span><b style="font-size:16px;">${total.toLocaleString()}원</b></div>
+    ${mainsPicked.length===SET.mainLimit
+      ? `<div class="small tag-ok">메인 선택 완료</div>`
+      : `<div class="small tag-warn">메인 ${SET.mainLimit}개를 선택해야 완료됩니다.</div>`
+    }
+  `;
+  document.getElementById("btnDone").disabled = mainsPicked.length !== SET.mainLimit;
+}
+/** 전체 렌더 */
+function renderAll(){
+  renderMainGrid();
+  renderOptGrid();
+  renderPickedBox();
+  renderPriceBox();
+}
+renderAll();
+/** =========================
+ *  이벤트: 메인 담기 +/- 
+ * ========================= */
+mainGrid.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  const id = btn.dataset.id;
+  const act = btn.dataset.act;
+  if(act==="plus"){
+    if(mainsPicked.length >= SET.mainLimit){
+      alert(`메인은 최대 ${SET.mainLimit}개까지 선택 가능합니다.`);
+      return;
+    }
+    mainsPicked.push({ mainId:id, upgradeId:null, opts:{gop:false, sauce:false} });
+  }
+  if(act==="minus"){
+    const idx = mainsPicked.findIndex(m=>m.mainId===id);
+    if(idx>-1) mainsPicked.splice(idx,1);
+  }
+  renderAll();
+});
+/** =========================
+ *  이벤트: 선택한 구성 옵션/삭제
+ * ========================= */
+pickedBox.addEventListener("change", (e)=>{
+  const kind = e.target.dataset.kind;
+  const idx = Number(e.target.dataset.idx);
+  if(Number.isNaN(idx)) return;
+  if(kind==="upgrade"){
+    mainsPicked[idx].upgradeId = e.target.value || null;
+  }
+  if(kind==="gop"){
+    mainsPicked[idx].opts.gop = e.target.checked;
+  }
+  if(kind==="sauce"){
+    mainsPicked[idx].opts.sauce = e.target.checked;
+  }
+  renderAll();
+});
+pickedBox.addEventListener("click", (e)=>{
+  const btn = e.target.closest("button");
+  if(!btn) return;
+  if(btn.dataset.kind==="removeMain"){
+    const idx = Number(btn.dataset.idx);
+    mainsPicked.splice(idx,1);
+    renderAll();
+  }
+});
+/** =========================
+ *  초기화
+ * ========================= */
+document.getElementById("btnReset").addEventListener("click", ()=>{
+  if(confirm("선택을 모두 초기화할까요?")){
+    mainsPicked = [];
+    renderAll();
+  }
+});
+/** =========================
+ *  완료 → order.html로 전달
+ * ========================= */
+document.getElementById("btnDone").addEventListener("click", ()=>{
+  const base = SET.basePrice;
+  let addTotal = 0;
+  const detail = mainsPicked.map(m=>{
+    const mainTitle = MAIN_ITEMS.find(x=>x.id===m.mainId)?.title;
+    const upgrade = RICE_UPGRADES.find(x=>x.id===m.upgradeId);
+    const upgradestr = upgrade ? upgrade.title : "기본(면)";
+    const add = (upgrade?upgrade.add:0) + (m.opts.gop?1000:0) + (m.opts.sauce?1000:0);
+    addTotal += add;
+    return { mainId:m.mainId, mainTitle, upgradeId:m.upgradeId, upgradestr, opts:m.opts, add };
+  });
+  const payload = {
+    setType,
+    setName: SET.name,
+    basePrice: base,
+    addTotal,
+    totalPrice: base + addTotal,
+    tang: SET.tang,
+    mains: detail,
+    createdAt: new Date().toISOString()
+  };
+  // 로컬스토리지에 저장해 order.html에서 읽게 함
+  localStorage.setItem("jjangnara_set_payload", JSON.stringify(payload));
+  // order.html로 이동
+  location.href = "order.html#set=ready";
+});
+</script>
+</body>
+</html>
+
