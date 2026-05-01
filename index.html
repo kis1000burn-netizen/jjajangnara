@@ -4104,14 +4104,6 @@
 
 
 
-    function isBusinessStatusAdminMode() {
-
-      return new URLSearchParams(globalThis.location.search).get("admin") === "1";
-
-    }
-
-
-
     function isBusinessStatusAuthenticated() {
 
       try {
@@ -4217,9 +4209,8 @@
       const adminMessage = document.getElementById("businessStatusAdminMessage");
       const passwordInput = document.getElementById("businessStatusPassword");
       const adminButtons = document.querySelectorAll(".business-status-admin-btn");
-      const isAdminMode = isBusinessStatusAdminMode();
       const isAuthenticated = isBusinessStatusAuthenticated();
-      const isPanelOpen = isAdminMode || isBusinessStatusAdminPanelOpen();
+      const isPanelOpen = isBusinessStatusAdminPanelOpen();
       const currentMode = getBusinessStatusMode();
       const statusButton = document.getElementById("businessStatus");
 

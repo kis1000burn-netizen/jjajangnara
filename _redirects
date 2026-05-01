@@ -2,10 +2,7 @@
 # 모든 경로를 index.html로 리다이렉트 (SPA 모드)
 # 현재는 정적 사이트이므로 주석 처리
 
-# 관리자 모드는 비공개 운영용으로 숨김 쿼리 주소만 사용
-
-/admin    /index.html?admin=1    302
-/admin/   /index.html?admin=1    302
+# 관리자 패널은 메인 화면의 영업 상태 버튼 클릭으로만 엽니다
 
 # /*    /index.html   200
 
