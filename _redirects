@@ -4,6 +4,9 @@
 
 # 관리자 모드는 비공개 운영용으로 숨김 쿼리 주소만 사용
 
+/admin    /index.html?admin=1    302
+/admin/   /index.html?admin=1    302
+
 # /*    /index.html   200
 
 
