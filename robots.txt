@@ -1,7 +1,7 @@
 User-agent: *
 Allow: /
 
-# Daum Webmaster Tool 크롤러 허용
+# 네이버·다음 검색 크롤러
 User-agent: Daumoa
 Allow: /
 
@@ -12,5 +12,3 @@ Allow: /
 #DaumWebMasterTool:be1b71220b42da3bd42620ee60f6ddd1ef4add160573109e93798c28a0817a03:O+1qiBzWmFt+sFCap3SkYQ==
 
 Sitemap: https://짜장나라.com/sitemap.xml
-
-
