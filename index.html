@@ -757,22 +757,6 @@
 
 
 
-    .business-status-notice {
-
-      display: block;
-
-      margin-top: 0.35rem;
-
-      font-size: 0.78rem;
-
-      line-height: 1.5;
-
-      color: var(--accent-gold-soft);
-
-    }
-
-
-
     .business-status-editor {
 
       display: flex;
@@ -1153,20 +1137,6 @@
       font-size: 0.8rem;
 
       color: var(--text-sub);
-
-    }
-
-
-
-    .business-notice-text {
-
-      margin-top: 0.4rem;
-
-      font-size: 0.85rem;
-
-      line-height: 1.6;
-
-      color: var(--accent-gold-soft);
 
     }
 
@@ -2745,9 +2715,7 @@
 
           <strong class="business-status-title" id="businessStatusTitle">현재 영업 상태 확인 중</strong>
 
-          <span class="business-status-detail" id="businessStatusDetail">오전 10시 ~ 오후 8시 · 일요일 및 공휴일 휴무</span>
-
-          <span class="business-status-notice">본 매장은 지속적인 주방보조 인력부재로 부득이하게 배달/예약/포장 형태의 영업만 가능합니다.</span>
+          <span class="business-status-detail" id="businessStatusDetail">오전 10시 ~ 오후 8시</span>
 
         </div>
 
@@ -2848,15 +2816,9 @@
 
       <div class="hero-meta" id="businessHoursHeroMeta">
 
-        영업시간: 오전 10시 ~ 오후 8시 · 휴무일: 매주 일요일 및 법정 공휴일 · 세종특별자치시 집현중앙7로6,G동 158호
+        영업시간: 오전 10시 ~ 오후 8시 · 세종특별자치시 집현중앙7로6,G동 158호
 
       </div>
-
-      <p class="hero-meta business-notice-text">
-
-        본 매장은 지속적인 주방보조 인력부재로 부득이하게 배달/예약/포장 형태의 영업만 가능합니다.
-
-      </p>
 
     </div>
 
@@ -3427,10 +3389,6 @@
 
           <p class="business-hours-text">영업시간: 오전 10시 ~ 오후 8시</p>
 
-          <p>휴무일: 매주 일요일 및 법정 공휴일</p>
-
-          <p class="business-notice-text">본 매장은 지속적인 주방보조 인력부재로 부득이하게 배달/예약/포장 형태의 영업만 가능합니다.</p>
-
         </div>
 
       </div>
@@ -3660,10 +3618,6 @@
           <p>주소: 세종특별자치시 집현중앙7로6,G동 158호</p>
 
           <p class="business-hours-text">영업시간: 오전 10시 ~ 오후 8시</p>
-
-          <p>휴무일: 매주 일요일 및 법정 공휴일</p>
-
-          <p class="business-notice-text">본 매장은 지속적인 주방보조 인력부재로 부득이하게 배달/예약/포장 형태의 영업만 가능합니다.</p>
 
           <p>도메인: 짜장나라.com</p>
 
@@ -4100,7 +4054,7 @@
 
       if (heroMeta) {
 
-        heroMeta.textContent = `${hoursLabel} · 휴무일: 매주 일요일 및 법정 공휴일 · 세종특별자치시 집현중앙7로6,G동 158호`;
+        heroMeta.textContent = `${hoursLabel} · 세종특별자치시 집현중앙7로6,G동 158호`;
 
       }
 
@@ -4569,10 +4523,6 @@
       const now = new Date();
       const seoulParts = new Intl.DateTimeFormat("en-US", {
         timeZone: "Asia/Seoul",
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        weekday: "short",
         hour: "2-digit",
         minute: "2-digit",
         hourCycle: "h23",
@@ -4580,35 +4530,12 @@
 
       const getPart = (type) => seoulParts.find((part) => part.type === type)?.value ?? "";
 
-      const year = getPart("year");
-      const month = getPart("month");
-      const day = getPart("day");
-      const weekday = getPart("weekday");
       const hour = Number(getPart("hour"));
       const minute = Number(getPart("minute"));
-      const todayKey = `${year}-${month}-${day}`;
-      const monthDayKey = `${month}-${day}`;
       const currentMinutes = hour * 60 + minute;
       const openMinutes = businessHours.openMinutes;
       const closeMinutes = businessHours.closeMinutes;
-
-      const fixedHolidayKeys = new Set([
-        "01-01",
-        "03-01",
-        "05-05",
-        "06-06",
-        "08-15",
-        "10-03",
-        "10-09",
-        "12-25",
-      ]);
-
-      // 변동 공휴일은 해마다 달라지므로 필요할 때 YYYY-MM-DD 형식으로 추가하세요.
-      const extraHolidayKeys = new Set([]);
-
-      const isSunday = weekday === "Sun";
-      const isHoliday = fixedHolidayKeys.has(monthDayKey) || extraHolidayKeys.has(todayKey);
-      const isOpen = !isSunday && !isHoliday && currentMinutes >= openMinutes && currentMinutes < closeMinutes;
+      const isOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
 
       if (overrideMode === "open") {
         statusElement.classList.add("is-open");
@@ -4632,18 +4559,6 @@
       if (isOpen) {
         statusTitle.textContent = "현재 영업중";
         statusDetail.textContent = `${businessHoursDisplay} 영업 · 지금 바로 주문 가능합니다`;
-        return;
-      }
-
-      if (isSunday) {
-        statusTitle.textContent = "오늘은 휴무일";
-        statusDetail.textContent = "매주 일요일 정기 휴무입니다";
-        return;
-      }
-
-      if (isHoliday) {
-        statusTitle.textContent = "오늘은 휴무일";
-        statusDetail.textContent = "법정 공휴일은 쉬어갑니다";
         return;
       }
 
