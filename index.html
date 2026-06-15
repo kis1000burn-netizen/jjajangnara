@@ -28,6 +28,15 @@
 
   <meta name="daum-site-verification" content="be1b71220b42da3bd42620ee60f6ddd1ef4add160573109e93798c28a0817a03" />
 
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
   <!-- JSON-LD 구조화 데이터 -->
   <script type="application/ld+json">
   {
@@ -576,15 +585,37 @@
 
 
 
-    .hero-inner {
+    .hero-layout {
 
-      position: relative;
+      display: grid;
+
+      grid-template-columns: minmax(0, 1fr) minmax(240px, 360px);
+
+      gap: 2rem;
+
+      align-items: center;
 
       max-width: var(--max-width);
 
       margin: 0 auto;
 
-      padding: 0 1.2rem;
+      padding: 2.5rem 1.2rem 3rem;
+
+    }
+
+
+
+    .hero-layout.hero-layout--single {
+
+      grid-template-columns: 1fr;
+
+    }
+
+
+
+    .hero-inner {
+
+      position: relative;
 
       display: flex;
 
@@ -593,6 +624,158 @@
       justify-content: flex-start;
 
       gap: 1.8rem;
+
+    }
+
+
+
+    .hero-character {
+
+      position: relative;
+
+      width: 100%;
+
+    }
+
+
+
+    .hero-character-stage {
+
+      position: relative;
+
+      width: 100%;
+
+      aspect-ratio: 1;
+
+      min-height: 260px;
+
+      max-height: 420px;
+
+      border-radius: 1.2rem;
+
+      overflow: hidden;
+
+      border: 1px solid rgba(217, 164, 65, 0.22);
+
+      background:
+        radial-gradient(circle at 50% 20%, rgba(217, 164, 65, 0.18), transparent 55%),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.35));
+
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.28);
+
+    }
+
+
+
+    .hero-character-stage canvas,
+    .hero-character-fallback-image {
+
+      display: block;
+
+      width: 100%;
+
+      height: 100%;
+
+      object-fit: contain;
+
+    }
+
+
+
+    .hero-character-placeholder {
+
+      position: absolute;
+
+      inset: 0;
+
+      display: flex;
+
+      flex-direction: column;
+
+      align-items: center;
+
+      justify-content: center;
+
+      gap: 0.45rem;
+
+      padding: 1rem;
+
+      text-align: center;
+
+      pointer-events: none;
+
+    }
+
+
+
+    .hero-character-placeholder-label {
+
+      font-size: 0.92rem;
+
+      font-weight: 700;
+
+      color: var(--accent-gold-soft);
+
+    }
+
+
+
+    .hero-character-placeholder-hint {
+
+      font-size: 0.72rem;
+
+      line-height: 1.5;
+
+      color: var(--text-sub);
+
+      word-break: break-all;
+
+    }
+
+
+
+    .hero-character-status {
+
+      margin-top: 0.55rem;
+
+      font-size: 0.75rem;
+
+      color: var(--text-sub);
+
+      text-align: center;
+
+    }
+
+
+
+    .hero-character-status[hidden] {
+
+      display: none;
+
+    }
+
+
+
+    .hero-character--loading .hero-character-stage {
+
+      opacity: 0.72;
+
+    }
+
+
+
+    .hero-character--loaded .hero-character-placeholder,
+    .hero-character--static .hero-character-placeholder {
+
+      display: none;
+
+    }
+
+
+
+    .hero-character--error .hero-character-placeholder-label {
+
+      color: #ff9f9f;
 
     }
 
@@ -1421,6 +1604,22 @@
       .menu-grid {
 
         grid-template-columns: repeat(2, minmax(0, 1fr));
+
+      }
+
+
+
+      .hero-layout {
+
+        grid-template-columns: 1fr;
+
+      }
+
+
+
+      .hero-character {
+
+        order: -1;
 
       }
 
@@ -2697,7 +2896,7 @@
 
   <section class="hero">
 
-
+    <div class="hero-layout hero-layout--single">
 
     <div class="hero-inner">
 
@@ -2819,6 +3018,28 @@
         영업시간: 오전 10시 ~ 오후 8시 · 세종특별자치시 집현중앙7로6,G동 158호
 
       </div>
+
+    </div>
+
+
+
+    <aside class="hero-character" id="heroCharacter" aria-label="짜장나라 3D 캐릭터" hidden>
+
+      <div class="hero-character-stage" id="heroCharacterStage">
+
+        <div class="hero-character-placeholder" id="heroCharacterPlaceholder">
+
+          <span class="hero-character-placeholder-label">3D 캐릭터 영역</span>
+
+          <span class="hero-character-placeholder-hint">assets/character/mascot.glb<br />업로드 후 config에서 enabled: true</span>
+
+        </div>
+
+      </div>
+
+      <p class="hero-character-status" id="heroCharacterStatus" hidden></p>
+
+    </aside>
 
     </div>
 
@@ -4623,6 +4844,8 @@
     });
 
   </script>
+
+  <script type="module" src="assets/js/hero-character.js"></script>
 
 </body>
 
