@@ -6,7 +6,9 @@
  *     overlayId: "jjajang-intro-ov",
  *     rowId: "jj-row",
  *     taglineId: "jj-tagline"
- *   }, function () { /* finished */ });
+ *   }, function () {
+ *     // animation finished
+ *   });
  */
 (function () {
   var JJAJANG_LETTERS = [
