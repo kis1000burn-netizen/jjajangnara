@@ -805,6 +805,30 @@
 
 
 
+    .hero-brand {
+
+      font-size: clamp(1.6rem, 3.2vw, 2.2rem);
+
+      font-weight: 800;
+
+      letter-spacing: 0.06em;
+
+      color: var(--accent-gold-soft);
+
+      text-shadow: 0 0 24px rgba(217, 164, 65, 0.35);
+
+    }
+
+
+
+    body.is-intro-playing {
+
+      overflow: hidden;
+
+    }
+
+
+
     .business-status {
 
       display: inline-flex;
@@ -2902,9 +2926,11 @@
 
       <div class="hero-badge">
 
-        세종 중화요리 맛집 · 짜장나라 세종본점
+        세종 짜장면·짬뽕 전문점
 
       </div>
+
+      <p class="hero-brand">짜장나라 세종본점</p>
 
       <button type="button" class="business-status is-open" id="businessStatus" aria-live="polite" aria-expanded="false" aria-controls="businessStatusEditor">
 
@@ -4824,11 +4850,66 @@
 
 
 
+    function initEntryAnimation() {
+
+      if (!globalThis.EntryAnimation) {
+
+        return;
+
+      }
+
+      if (globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+
+        return;
+
+      }
+
+      try {
+
+        if (globalThis.sessionStorage.getItem("jjajangnara-intro-seen")) {
+
+          return;
+
+        }
+
+      } catch (error) {
+
+        console.log("진입 애니메이션 세션 확인 실패:", error);
+
+      }
+
+      document.body.classList.add("is-intro-playing");
+
+      globalThis.EntryAnimation.play({
+        taglineText: "짜장나라 세종본점",
+        skipText: "탭하여 건너뛰기",
+        backgroundColor: "#111111"
+      }, function () {
+
+        document.body.classList.remove("is-intro-playing");
+
+        try {
+
+          globalThis.sessionStorage.setItem("jjajangnara-intro-seen", "1");
+
+        } catch (error) {
+
+          console.log("진입 애니메이션 세션 저장 실패:", error);
+
+        }
+
+      });
+
+    }
+
+
+
     // 상표 출원 정보는 trademark-info.html 파일로 직접 링크됨
     // 페이지 로드 시 지도 초기화
 
     globalThis.addEventListener("DOMContentLoaded", function() {
 
+      initEntryAnimation();
       updateBusinessHoursText();
       initBusinessStatusEditor();
       updateBusinessStatusLamp();
@@ -4844,6 +4925,8 @@
     });
 
   </script>
+
+  <script src="assets/js/entry-animation.js"></script>
 
   <script type="module" src="assets/js/hero-character.js"></script>
 
