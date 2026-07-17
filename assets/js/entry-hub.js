@@ -11,6 +11,102 @@
   var CHARACTER_IMAGE = "assets/character/hyerie.png";
   var GREETING = "안녕하세요! 짜장나라 세종본점입니다. 원하시는 서비스를 선택해 주세요.";
   var MENU_OPEN_DELAY = 900;
+  var guidanceUtterance = null;
+  var lastHeroVoiceIndex = -1;
+
+  // 여성 안내 음성 5종 프로필 (시스템 한국어 여성 음성 + pitch/rate로 구분)
+  var HERO_FEMALE_VOICE_PROFILES = [
+    { id: "heroine-a", pitch: 1.18, rate: 1.0, prefer: /yuna|sunhi|heami|혜미|유나/i },
+    { id: "heroine-b", pitch: 1.1, rate: 1.03, prefer: /jimin|jiwon|서현|지민|neural/i },
+    { id: "heroine-c", pitch: 1.02, rate: 0.98, prefer: /google.*한국|microsoft.*ko|hee/i },
+    { id: "heroine-d", pitch: 1.14, rate: 1.06, prefer: /female|여자|woman/i },
+    { id: "heroine-e", pitch: 0.96, rate: 1.01, prefer: /ko-KR|korean|한국/i }
+  ];
+
+  function listKoreanVoices() {
+    try {
+      return (globalThis.speechSynthesis?.getVoices?.() || []).filter(function (voice) {
+        return /ko(-KR)?|korean|한국/i.test(voice.lang + " " + voice.name);
+      });
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function pickHeroFemaleVoiceProfile() {
+    var index = Math.floor(Math.random() * HERO_FEMALE_VOICE_PROFILES.length);
+    if (HERO_FEMALE_VOICE_PROFILES.length > 1 && index === lastHeroVoiceIndex) {
+      index = (index + 1) % HERO_FEMALE_VOICE_PROFILES.length;
+    }
+    lastHeroVoiceIndex = index;
+    var profile = HERO_FEMALE_VOICE_PROFILES[index];
+    var koVoices = listKoreanVoices();
+    var matched =
+      koVoices.find(function (voice) { return profile.prefer.test(voice.name); }) ||
+      koVoices.find(function (voice) { return /female|여자|yuna|sunhi|heami|neural/i.test(voice.name); }) ||
+      koVoices[index % Math.max(koVoices.length, 1)] ||
+      null;
+    return { profile: profile, voice: matched || null };
+  }
+
+  function stopGuidanceSpeech() {
+    guidanceUtterance = null;
+    try {
+      if (globalThis.speechSynthesis) globalThis.speechSynthesis.cancel();
+    } catch (_) {}
+  }
+
+  /** 말풍선 안내 문구를 여성 음성 5종 중 랜덤으로 낭독 */
+  function speakGuidance(message) {
+    if (!message || !("speechSynthesis" in globalThis)) return;
+
+    stopGuidanceSpeech();
+    var picked = pickHeroFemaleVoiceProfile();
+    var utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "ko-KR";
+    utterance.rate = picked.profile.rate;
+    utterance.pitch = picked.profile.pitch;
+    utterance.volume = 1;
+    if (picked.voice) utterance.voice = picked.voice;
+    guidanceUtterance = utterance;
+    utterance.onend = function () {
+      if (guidanceUtterance === utterance) guidanceUtterance = null;
+    };
+    utterance.onerror = function () {
+      if (guidanceUtterance === utterance) guidanceUtterance = null;
+    };
+
+    var speakNow = function () {
+      try {
+        if (!utterance.voice) {
+          var koVoices = listKoreanVoices();
+          var voice =
+            koVoices.find(function (item) { return picked.profile.prefer.test(item.name); }) ||
+            koVoices[0] ||
+            null;
+          if (voice) utterance.voice = voice;
+        }
+        globalThis.speechSynthesis.speak(utterance);
+      } catch (error) {
+        console.log("히어로 안내 음성 재생 실패:", error);
+      }
+    };
+
+    var voices = globalThis.speechSynthesis.getVoices();
+    if (!voices || voices.length === 0) {
+      var onVoices = function () {
+        globalThis.speechSynthesis.removeEventListener("voiceschanged", onVoices);
+        speakNow();
+      };
+      globalThis.speechSynthesis.addEventListener("voiceschanged", onVoices);
+      globalThis.setTimeout(function () {
+        globalThis.speechSynthesis.removeEventListener("voiceschanged", onVoices);
+        if (guidanceUtterance === utterance) speakNow();
+      }, 450);
+      return;
+    }
+    speakNow();
+  }
 
   var ACTIONS = [
     { id: "menu", title: "메뉴 보기", href: "#menu", primary: true },
@@ -256,6 +352,7 @@
       requestAnimationFrame(function () {
         speech.classList.add("is-visible");
       });
+      speakGuidance(GREETING);
     }
     if (menu) {
       menu.classList.remove("is-open");
@@ -374,6 +471,15 @@
       globalThis.AiVoicePreflight &&
       typeof globalThis.AiVoicePreflight.request === "function"
     ) {
+      var existing = typeof globalThis.AiVoicePreflight.getStatus === "function"
+        ? globalThis.AiVoicePreflight.getStatus()
+        : "";
+      if (existing === "granted" || existing === "text") {
+        setDismissed();
+        close();
+        globalThis.location.href = action.href;
+        return;
+      }
       globalThis.AiVoicePreflight.request().then(function (status) {
         if (status === "cancelled") return;
         setDismissed();
@@ -481,6 +587,7 @@
 
   function close() {
     var root = document.getElementById(HUB_ID);
+    stopGuidanceSpeech();
     document.body.classList.remove("is-entry-hub-open");
     document.documentElement.classList.remove("entry-pending");
     if (globalThis.__entryRevealFailsafe) {
@@ -530,6 +637,8 @@
     revealStoreVideo: revealStoreVideo,
     reopenHomeEntry: reopenHomeEntry,
     clearHubDismissal: clearHubDismissal,
-    clearEntryDismissal: clearEntryDismissal
+    clearEntryDismissal: clearEntryDismissal,
+    speakGuidance: speakGuidance,
+    stopGuidanceSpeech: stopGuidanceSpeech
   };
 })();
