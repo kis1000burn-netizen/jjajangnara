@@ -1,3 +1,5 @@
+const { savePaidOrder } = require("./_orders");
+
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
     return {
@@ -16,12 +18,12 @@ exports.handler = async function (event) {
   }
 
   try {
-    const { paymentKey, orderId, amount } = JSON.parse(event.body || "{}");
+    const { paymentKey, orderId, amount, order } = JSON.parse(event.body || "{}");
 
-    if (!paymentKey || !orderId || typeof amount === "undefined") {
+    if (!paymentKey || !orderId || typeof amount === "undefined" || !order) {
       return {
         statusCode: 400,
-        body: JSON.stringify({ message: "paymentKey, orderId, amount are required." }),
+        body: JSON.stringify({ message: "paymentKey, orderId, amount, order are required." }),
       };
     }
 
@@ -30,6 +32,7 @@ exports.handler = async function (event) {
       headers: {
         Authorization: `Basic ${Buffer.from(`${secretKey}:`).toString("base64")}`,
         "Content-Type": "application/json",
+        "Idempotency-Key": orderId,
       },
       body: JSON.stringify({
         paymentKey,
@@ -50,15 +53,21 @@ exports.handler = async function (event) {
       };
     }
 
+    const paymentData = {
+      paymentKey: result.paymentKey,
+      orderId: result.orderId,
+      method: result.method,
+      status: result.status,
+      totalAmount: result.totalAmount,
+      approvedAt: result.approvedAt,
+    };
+    const posOrder = await savePaidOrder(event, order, paymentData);
+
     return {
       statusCode: 200,
       body: JSON.stringify({
-        paymentKey: result.paymentKey,
-        orderId: result.orderId,
-        method: result.method,
-        status: result.status,
-        totalAmount: result.totalAmount,
-        approvedAt: result.approvedAt,
+        ...paymentData,
+        dispatchedToPos: Boolean(posOrder),
       }),
     };
   } catch (error) {

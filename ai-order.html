@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/images/logo.png.png" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+  <title>AI 음성 주문 | 짜장나라 세종본점</title>
+  <meta name="description" content="짜장나라 세종본점 AI 음성 주문. 음성으로 메뉴를 보고 장바구니를 구성합니다." />
+  <meta name="robots" content="noindex" />
+  <style>
+    :root {
+      --bg: #0d0e10;
+      --panel: #17191d;
+      --panel-soft: #202329;
+      --line: #30343c;
+      --gold: #d9a441;
+      --gold-soft: #f3d28a;
+      --text: #f8f5ee;
+      --sub: #bbb8af;
+      --good: #4cd28a;
+      --danger: #ff7a7a;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: 1rem 1rem 7rem;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(217, 164, 65, 0.14), transparent 32rem),
+        var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Apple SD Gothic Neo", system-ui, sans-serif;
+    }
+    button, input { font: inherit; }
+    button { -webkit-tap-highlight-color: transparent; }
+    .page {
+      width: min(1040px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 1rem;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.7rem 0;
+    }
+    .brand {
+      color: var(--gold-soft);
+      font-weight: 800;
+      letter-spacing: 0.04em;
+    }
+    .home-link {
+      color: var(--sub);
+      text-decoration: none;
+      font-size: 0.88rem;
+    }
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
+      gap: 1rem;
+      align-items: stretch;
+    }
+    .panel {
+      padding: 1.2rem;
+      border: 1px solid var(--line);
+      border-radius: 1.15rem;
+      background: rgba(23, 25, 29, 0.94);
+      box-shadow: 0 18px 45px rgba(0, 0, 0, 0.25);
+    }
+    .eyebrow {
+      color: var(--gold);
+      font-size: 0.72rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+    }
+    h1 {
+      margin: 0.35rem 0 0.5rem;
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      color: var(--gold-soft);
+    }
+    .intro {
+      margin: 0;
+      color: var(--sub);
+      line-height: 1.65;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--sub);
+      box-shadow: 0 0 0 5px rgba(187, 184, 175, 0.1);
+    }
+    .status-dot.is-listening {
+      background: var(--good);
+      box-shadow: 0 0 0 5px rgba(76, 210, 138, 0.15), 0 0 18px rgba(76, 210, 138, 0.5);
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse { 50% { transform: scale(1.2); } }
+    .status-text { color: var(--sub); font-size: 0.86rem; }
+    .order-mode {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.45rem;
+      margin-top: 1rem;
+    }
+    .mode-btn {
+      min-height: 46px;
+      padding: 0.55rem;
+      border: 1px solid var(--line);
+      border-radius: 0.75rem;
+      background: var(--panel-soft);
+      color: var(--text);
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+    .mode-btn.is-active {
+      border-color: var(--gold);
+      background: rgba(62, 183, 232, 0.25);
+      color: var(--gold-soft);
+    }
+    .minimum-order {
+      margin-top: 0.65rem;
+      color: var(--gold-soft);
+      font-size: 0.8rem;
+      font-weight: 750;
+    }
+    .voice-controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.65rem;
+      margin-top: 1rem;
+    }
+    .mic-btn, .command-btn, .checkout-btn, .qty-btn, .clear-btn {
+      border: 0;
+      cursor: pointer;
+      min-height: 44px;
+      border-radius: 0.8rem;
+      font-weight: 800;
+    }
+    .mic-btn {
+      color: #111;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      padding: 0.75rem 1rem;
+    }
+    .mic-btn.is-active {
+      color: #fff;
+      background: linear-gradient(135deg, #b82929, #e44c4c);
+    }
+    .command-input {
+      width: 100%;
+      min-width: 0;
+      border: 1px solid var(--line);
+      border-radius: 0.8rem;
+      padding: 0.75rem 0.85rem;
+      background: #0e1013;
+      color: var(--text);
+      outline: none;
+    }
+    .command-input:focus { border-color: rgba(217, 164, 65, 0.6); }
+    .command-btn {
+      padding: 0 1rem;
+      border: 1px solid rgba(217, 164, 65, 0.45);
+      background: rgba(217, 164, 65, 0.1);
+      color: var(--gold-soft);
+    }
+    .transcript {
+      margin-top: 0.75rem;
+      min-height: 3rem;
+      padding: 0.75rem;
+      border-radius: 0.8rem;
+      background: #0e1013;
+      color: var(--text);
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+    .examples {
+      display: grid;
+      gap: 0.55rem;
+    }
+    .examples h2, .menu-section h2, .cart-panel h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      color: var(--gold-soft);
+    }
+    .example {
+      padding: 0.65rem 0.75rem;
+      border-radius: 0.7rem;
+      background: var(--panel-soft);
+      color: var(--sub);
+      font-size: 0.82rem;
+      line-height: 1.45;
+    }
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 1.55fr) minmax(270px, 0.75fr);
+      gap: 1rem;
+      align-items: start;
+    }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-top: 0.8rem;
+    }
+    .menu-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 0.85rem;
+      background: var(--panel-soft);
+    }
+    .menu-name { font-weight: 800; }
+    .menu-price { margin-top: 0.15rem; color: var(--gold-soft); font-size: 0.82rem; }
+    .menu-options { display: grid; gap: 0.45rem; min-width: 176px; }
+    .menu-option {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.45rem;
+    }
+    .menu-option-label {
+      color: var(--sub);
+      font-size: 0.72rem;
+      white-space: nowrap;
+    }
+    .qty-controls { display: flex; align-items: center; gap: 0.4rem; }
+    .qty-btn {
+      width: 38px;
+      min-height: 38px;
+      background: #111318;
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-size: 1.1rem;
+    }
+    .qty-value { min-width: 1.5rem; text-align: center; font-weight: 800; }
+    .cart-panel { position: sticky; top: 1rem; }
+    .cart-list {
+      display: grid;
+      gap: 0.5rem;
+      margin: 0.8rem 0;
+    }
+    .cart-empty { color: var(--sub); font-size: 0.88rem; }
+    .cart-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.8rem;
+      padding: 0.65rem 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 0.88rem;
+    }
+    .cart-total {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.85rem 0;
+      font-weight: 800;
+      color: var(--gold-soft);
+    }
+    .checkout-btn {
+      width: 100%;
+      padding: 0.8rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      color: #111;
+    }
+    .checkout-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .clear-btn {
+      width: 100%;
+      margin-top: 0.5rem;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--sub);
+    }
+    .notice {
+      color: var(--sub);
+      font-size: 0.75rem;
+      line-height: 1.5;
+      margin-top: 0.7rem;
+    }
+    .set-section { margin-top: 1rem; }
+    .set-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.65rem;
+      margin-top: 0.8rem;
+    }
+    .set-card {
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+      padding: 0.9rem;
+      border: 1px solid var(--line);
+      border-radius: 0.9rem;
+      background: var(--panel-soft);
+    }
+    .set-name { font-weight: 850; color: var(--gold-soft); }
+    .set-price { font-size: 1.05rem; font-weight: 850; }
+    .set-desc { flex: 1; color: var(--sub); font-size: 0.76rem; line-height: 1.55; }
+    .set-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0.55rem 0.7rem;
+      border: 1px solid var(--line);
+      border-radius: 0.7rem;
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      color: #071d30;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 850;
+    }
+    @media (max-width: 780px) {
+      .hero, .content { grid-template-columns: 1fr; }
+      .cart-panel { position: static; }
+      .menu-grid { grid-template-columns: 1fr; }
+      .set-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 480px) {
+      body { padding: 0.7rem 0.7rem 7rem; }
+      .panel { padding: 1rem; }
+      .voice-controls { grid-template-columns: 1fr; }
+      .command-btn { min-height: 44px; }
+      .order-mode { grid-template-columns: 1fr; }
+      .menu-card { grid-template-columns: 1fr; }
+      .menu-options { min-width: 0; }
+      .menu-option { justify-content: space-between; }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
+</head>
+<body>
+  <main class="page">
+    <nav class="topbar" aria-label="페이지 이동">
+      <div class="brand">짜장나라 세종본점</div>
+      <a class="home-link" href="index.html">홈으로</a>
+    </nav>
+
+    <section class="hero">
+      <div class="panel">
+        <div class="eyebrow">AI VOICE ORDER · 활성</div>
+        <h1>AI 음성 주문</h1>
+        <p class="intro">
+          마이크를 켜고 “짜장면 두 개” 또는 “짬뽕 곱빼기 한 개”처럼 말씀하세요.
+          AI 안내가 메뉴를 확인하고 장바구니를 구성합니다.
+        </p>
+        <div class="minimum-order">최소 주문금액 15,000원</div>
+        <div class="order-mode" id="orderMode" aria-label="주문 유형 선택">
+          <button type="button" class="mode-btn" data-mode="single">단품 주문</button>
+          <button type="button" class="mode-btn" data-mode="set">세트 주문</button>
+          <button type="button" class="mode-btn" data-mode="mixed">세트 + 단품</button>
+        </div>
+        <div class="status-row" aria-live="polite">
+          <span class="status-dot" id="statusDot" aria-hidden="true"></span>
+          <span class="status-text" id="statusText">음성 주문을 시작할 수 있습니다.</span>
+        </div>
+        <button type="button" class="mic-btn" id="micButton">🎙 음성 주문 시작</button>
+        <div class="voice-controls">
+          <input
+            class="command-input"
+            id="commandInput"
+            type="text"
+            placeholder="예: 짬뽕 한 개 담아줘"
+            aria-label="음성 명령 대신 직접 입력"
+          />
+          <button type="button" class="command-btn" id="commandButton">명령 실행</button>
+        </div>
+        <div class="transcript" id="transcript" aria-live="polite">
+          말씀하신 내용과 처리 결과가 여기에 표시됩니다.
+        </div>
+      </div>
+
+      <aside class="panel examples">
+        <h2>이렇게 말해보세요</h2>
+        <div class="example">“메뉴 알려줘”</div>
+        <div class="example">“짜장면 두 개 담아줘”</div>
+        <div class="example">“짬뽕 한 개 빼줘”</div>
+        <div class="example">“장바구니 알려줘”</div>
+        <div class="example">“주문 완료” 또는 “결제할게”</div>
+      </aside>
+    </section>
+
+    <section class="content">
+      <div class="panel menu-section">
+        <h2>배달 단품 메뉴</h2>
+        <p class="notice">표시 가격은 배달용기 비용이 포함된 배달 주문 가격입니다.</p>
+        <div class="menu-grid" id="menuGrid"></div>
+        <div class="set-section">
+          <h2>세트 메뉴</h2>
+          <div class="set-grid" id="setGrid"></div>
+        </div>
+      </div>
+
+      <aside class="panel cart-panel">
+        <h2>AI 장바구니</h2>
+        <div class="cart-list" id="cartList"></div>
+        <div class="cart-total">
+          <span>합계</span>
+          <strong id="cartTotal">0원</strong>
+        </div>
+        <button type="button" class="checkout-btn" id="checkoutButton" disabled>
+          주문정보 입력 · 결제
+        </button>
+        <button type="button" class="clear-btn" id="clearButton">전체 삭제</button>
+        <p class="notice">
+          음성인식은 Chrome·Edge에서 가장 안정적입니다. 최종 주문·주소·결제는 기존 주문 화면에서 확인합니다.
+        </p>
+      </aside>
+    </section>
+  </main>
+
+  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260717af"></script>
+  <script src="assets/js/dist/ai-order-config.min.js?v=20260717af"></script>
+  <script>
+    (function () {
+      "use strict";
+
+      var AI_CART_KEY = "jjajangnara-ai-cart";
+      var CONFIG = globalThis.JJAJANG_AI_ORDER_CONFIG;
+      var PRODUCTS = CONFIG.products;
+      var SET_MENUS = CONFIG.sets;
+      var MINIMUM_ORDER_AMOUNT = CONFIG.minimumOrderAmount;
+      var ORDER_ITEMS = PRODUCTS.reduce(function (items, item) {
+        items.push(item);
+        if (item.large) {
+          items.push({
+            id: item.id + "-large",
+            name: item.name + " 곱빼기",
+            price: item.price + 1000,
+            baseId: item.id
+          });
+        }
+        return items;
+      }, []);
+
+      var cart = Object.create(null);
+      var recognition = null;
+      var listeningWanted = false;
+      var recognizing = false;
+      var speaking = false;
+      var currentOrderMode = "";
+
+      var menuGrid = document.getElementById("menuGrid");
+      var setGrid = document.getElementById("setGrid");
+      var orderModeElement = document.getElementById("orderMode");
+      var cartList = document.getElementById("cartList");
+      var cartTotal = document.getElementById("cartTotal");
+      var checkoutButton = document.getElementById("checkoutButton");
+      var clearButton = document.getElementById("clearButton");
+      var micButton = document.getElementById("micButton");
+      var commandInput = document.getElementById("commandInput");
+      var commandButton = document.getElementById("commandButton");
+      var transcript = document.getElementById("transcript");
+      var statusText = document.getElementById("statusText");
+      var statusDot = document.getElementById("statusDot");
+
+      function won(value) {
+        return value.toLocaleString("ko-KR") + "원";
+      }
+
+      function setOrderMode(mode, announce) {
+        if (!["single", "set", "mixed"].includes(mode)) return;
+        currentOrderMode = mode;
+        orderModeElement.querySelectorAll("[data-mode]").forEach(function (button) {
+          button.classList.toggle("is-active", button.dataset.mode === mode);
+        });
+        renderSetMenus();
+        if (announce) {
+          var promptKey = mode === "single" ? "singleReady" : mode === "set" ? "setReady" : "mixedReady";
+          speak(CONFIG.voice[promptKey]);
+        }
+      }
+
+      function getProduct(id) {
+        return ORDER_ITEMS.find(function (item) { return item.id === id; });
+      }
+
+      function quantityControls(id, name) {
+        var qty = cart[id] || 0;
+        return (
+          '<div class="qty-controls">' +
+            '<button type="button" class="qty-btn" data-id="' + id + '" data-delta="-1" aria-label="' + name + ' 수량 줄이기">−</button>' +
+            '<span class="qty-value" aria-label="수량">' + qty + '</span>' +
+            '<button type="button" class="qty-btn" data-id="' + id + '" data-delta="1" aria-label="' + name + ' 수량 늘리기">＋</button>' +
+          '</div>'
+        );
+      }
+
+      function renderMenu() {
+        menuGrid.innerHTML = PRODUCTS.map(function (item) {
+          var largeId = item.id + "-large";
+          return (
+            '<article class="menu-card">' +
+              '<div><div class="menu-name">' + item.name + '</div>' +
+              '<div class="menu-price">' + won(item.price) + (item.large ? " · 곱빼기 +1,000원" : "") + '</div></div>' +
+              '<div class="menu-options">' +
+                '<div class="menu-option"><span class="menu-option-label">기본</span>' + quantityControls(item.id, item.name) + '</div>' +
+                (item.large
+                  ? '<div class="menu-option"><span class="menu-option-label">곱빼기</span>' + quantityControls(largeId, item.name + " 곱빼기") + '</div>'
+                  : "") +
+              '</div>' +
+            '</article>'
+          );
+        }).join("");
+      }
+
+      function renderSetMenus() {
+        var modeQuery = currentOrderMode === "mixed" ? "&mode=mixed" : "&mode=set";
+        setGrid.innerHTML = SET_MENUS.map(function (setMenu) {
+          return (
+            '<article class="set-card">' +
+              '<div class="set-name">' + setMenu.name + '</div>' +
+              '<div class="set-price">' + won(setMenu.price) + '</div>' +
+              '<div class="set-desc">' + setMenu.desc + '</div>' +
+              '<a class="set-link" href="order.html?set=' + setMenu.id + modeQuery + '#builderSection">' + setMenu.name + ' 구성하기</a>' +
+            '</article>'
+          );
+        }).join("");
+      }
+
+      function getCartItems() {
+        return ORDER_ITEMS.filter(function (item) {
+          return (cart[item.id] || 0) > 0;
+        }).map(function (item) {
+          return { id: item.id, qty: cart[item.id] };
+        });
+      }
+
+      function renderCart() {
+        var items = getCartItems();
+        if (items.length === 0) {
+          cartList.innerHTML = '<div class="cart-empty">담긴 메뉴가 없습니다.</div>';
+        } else {
+          cartList.innerHTML = items.map(function (entry) {
+            var item = getProduct(entry.id);
+            return (
+              '<div class="cart-row"><span>' + item.name + ' × ' + entry.qty + '</span>' +
+              '<strong>' + won(item.price * entry.qty) + '</strong></div>'
+            );
+          }).join("");
+        }
+
+        var total = items.reduce(function (sum, entry) {
+          return sum + getProduct(entry.id).price * entry.qty;
+        }, 0);
+        if (total > 0 && total < MINIMUM_ORDER_AMOUNT) {
+          cartList.insertAdjacentHTML(
+            "beforeend",
+            '<div class="cart-empty">최소 주문금액까지 ' + won(MINIMUM_ORDER_AMOUNT - total) + ' 남았습니다.</div>'
+          );
+        }
+        cartTotal.textContent = won(total);
+        checkoutButton.disabled = total < MINIMUM_ORDER_AMOUNT;
+        renderMenu();
+      }
+
+      function changeQuantity(id, delta, absolute) {
+        var current = cart[id] || 0;
+        var next = typeof absolute === "number" ? absolute : current + delta;
+        cart[id] = Math.min(20, Math.max(0, next));
+        if (cart[id] === 0) delete cart[id];
+        renderCart();
+      }
+
+      function setStatus(message, listening) {
+        statusText.textContent = message;
+        statusDot.classList.toggle("is-listening", Boolean(listening));
+        micButton.classList.toggle("is-active", Boolean(listening));
+        micButton.textContent = listening ? "■ 음성 주문 중지" : "🎙 음성 주문 시작";
+      }
+
+      function speak(message) {
+        transcript.textContent = message;
+        if (!("speechSynthesis" in globalThis)) return;
+
+        speaking = true;
+        if (recognizing && recognition) {
+          try { recognition.stop(); } catch (_) {}
+        }
+        globalThis.speechSynthesis.cancel();
+        var utterance = new SpeechSynthesisUtterance(message);
+        utterance.lang = "ko-KR";
+        utterance.rate = 1.02;
+        utterance.pitch = 1;
+        utterance.onend = function () {
+          speaking = false;
+          scheduleRecognitionRestart();
+        };
+        utterance.onerror = function () {
+          speaking = false;
+          scheduleRecognitionRestart();
+        };
+        globalThis.speechSynthesis.speak(utterance);
+      }
+
+      function normalizeText(text) {
+        return String(text || "")
+          .toLowerCase()
+          .replace(/[.,!?]/g, " ")
+          .replace(/\s+/g, " ")
+          .trim();
+      }
+
+      function parseQuantity(text) {
+        var digit = text.match(/(\d+)\s*(개|그릇|인분)?/);
+        if (digit) return Math.min(20, Math.max(1, Number.parseInt(digit[1], 10)));
+
+        var numbers = [
+          { words: ["스무"], value: 20 },
+          { words: ["열"], value: 10 },
+          { words: ["아홉", "구"], value: 9 },
+          { words: ["여덟", "팔"], value: 8 },
+          { words: ["일곱", "칠"], value: 7 },
+          { words: ["여섯", "육"], value: 6 },
+          { words: ["다섯", "오"], value: 5 },
+          { words: ["네", "넷", "사"], value: 4 },
+          { words: ["세", "셋", "삼"], value: 3 },
+          { words: ["두", "둘", "이"], value: 2 },
+          { words: ["한", "하나", "일"], value: 1 }
+        ];
+        for (var i = 0; i < numbers.length; i += 1) {
+          if (numbers[i].words.some(function (word) {
+            return new RegExp("(^|\\s)" + word + "(\\s|개|그릇|인분|$)").test(text);
+          })) {
+            return numbers[i].value;
+          }
+        }
+        return 1;
+      }
+
+      function findProduct(text) {
+        var compact = text.replace(/\s/g, "");
+        var matches = [];
+        PRODUCTS.forEach(function (item) {
+          item.aliases.forEach(function (alias) {
+            var normalizedAlias = alias.replace(/\s/g, "");
+            if (compact.includes(normalizedAlias)) {
+              matches.push({ item: item, length: normalizedAlias.length });
+            }
+          });
+        });
+        matches.sort(function (a, b) { return b.length - a.length; });
+        return matches.length ? matches[0].item : null;
+      }
+
+      function cartSummary() {
+        var items = getCartItems();
+        if (items.length === 0) return "장바구니가 비어 있습니다.";
+        var names = items.map(function (entry) {
+          return getProduct(entry.id).name + " " + entry.qty + "개";
+        });
+        var total = items.reduce(function (sum, entry) {
+          return sum + getProduct(entry.id).price * entry.qty;
+        }, 0);
+        var minimumMessage = total < MINIMUM_ORDER_AMOUNT
+          ? " 최소 주문금액까지 " + won(MINIMUM_ORDER_AMOUNT - total) + " 더 담아야 합니다."
+          : " 최소 주문금액을 충족했습니다.";
+        return names.join(", ") + ", 합계 " + won(total) + "입니다." + minimumMessage;
+      }
+
+      function goToCheckout() {
+        var items = getCartItems();
+        if (items.length === 0) {
+          speak("장바구니가 비어 있습니다. 먼저 메뉴를 담아 주세요.");
+          return;
+        }
+        var total = items.reduce(function (sum, entry) {
+          return sum + getProduct(entry.id).price * entry.qty;
+        }, 0);
+        if (total < MINIMUM_ORDER_AMOUNT) {
+          speak("최소 주문금액은 만 오천 원입니다. " + won(MINIMUM_ORDER_AMOUNT - total) + " 더 주문해 주세요.");
+          return;
+        }
+        globalThis.localStorage.setItem(AI_CART_KEY, JSON.stringify(items));
+        listeningWanted = false;
+        if (recognition && recognizing) {
+          try { recognition.stop(); } catch (_) {}
+        }
+        speak("최소 주문금액을 충족했습니다. 주문정보 입력 화면으로 이동합니다.");
+        globalThis.setTimeout(function () {
+          globalThis.location.href = "order.html#order-info";
+        }, 850);
+      }
+
+      function executeCommand(rawText) {
+        var text = normalizeText(rawText);
+        if (!text) return;
+        commandInput.value = "";
+        transcript.textContent = "인식: “" + text + "”";
+
+        var requestedSet = SET_MENUS.find(function (setMenu) {
+          return text.replace(/\s/g, "").includes(setMenu.name.replace(/\s/g, ""));
+        });
+        var requestedMode = "";
+        if (/세트.*(단품|추가)|(단품|추가).*세트/.test(text)) {
+          requestedMode = "mixed";
+        } else if (/단품(으로|만|메뉴|주문)?/.test(text)) {
+          requestedMode = "single";
+        } else if (/세트(메뉴)?(로|만|주문)?/.test(text) && !requestedSet) {
+          requestedMode = "set";
+        }
+        if (requestedMode) {
+          setOrderMode(requestedMode, false);
+          if (!requestedSet && !findProduct(text)) {
+            var modePromptKey = requestedMode === "single" ? "singleReady" : requestedMode === "set" ? "setReady" : "mixedReady";
+            speak(CONFIG.voice[modePromptKey]);
+            return;
+          }
+        }
+
+        if (requestedSet) {
+          if (!currentOrderMode) {
+            setOrderMode(getCartItems().length ? "mixed" : "set", false);
+          } else if (currentOrderMode === "single") {
+            setOrderMode(getCartItems().length ? "mixed" : "set", false);
+          }
+          if (currentOrderMode === "mixed" && getCartItems().length) {
+            globalThis.localStorage.setItem(AI_CART_KEY, JSON.stringify(getCartItems()));
+          }
+          var handoffMode = currentOrderMode === "mixed" ? "mixed" : "set";
+          speak(requestedSet.name + " 구성 화면으로 이동합니다. 메인 메뉴를 선택해 주세요.");
+          globalThis.setTimeout(function () {
+            globalThis.location.href = "order.html?set=" + requestedSet.id + "&mode=" + handoffMode + "#builderSection";
+          }, 900);
+          return;
+        }
+
+        if (/메뉴|뭐\s*있|추천/.test(text) && !findProduct(text)) {
+          if (!currentOrderMode) {
+            speak(CONFIG.voice.chooseMode);
+            return;
+          }
+          speak("배달 단품은 짜장면, 짬뽕, 짬짜면, 짬뽕밥, 콩국수, 차돌짬뽕, 볶음밥, 중화비빔밥, 제육덮밥이 있습니다. 세트는 혼밥세트, 달달커플세트, 패밀리세트가 있습니다.");
+          document.querySelector(".menu-section").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+
+        if (/장바구니|주문\s*내역|뭐\s*담/.test(text)) {
+          speak(cartSummary());
+          return;
+        }
+
+        if (/전체\s*(삭제|취소)|장바구니\s*(비워|삭제)/.test(text)) {
+          cart = Object.create(null);
+          renderCart();
+          speak("장바구니를 모두 비웠습니다.");
+          return;
+        }
+
+        if (/주문\s*(완료|하기|하러)|결제|주문정보/.test(text)) {
+          goToCheckout();
+          return;
+        }
+
+        var product = findProduct(text);
+        if (!product) {
+          speak("메뉴를 정확히 듣지 못했습니다. 예를 들어 짜장면 두 개 또는 짬뽕 곱빼기 한 개라고 말씀해 주세요.");
+          return;
+        }
+        if (!currentOrderMode) {
+          speak(CONFIG.voice.chooseMode);
+          return;
+        }
+        if (currentOrderMode === "set") {
+          speak("현재 세트 주문으로 선택되어 있습니다. 단품도 추가하려면 세트에 단품 추가라고 말씀해 주세요.");
+          return;
+        }
+        if (/곱빼기|곱배기/.test(text)) {
+          if (!product.large) {
+            speak(product.name + "은 곱빼기 선택이 없습니다.");
+            return;
+          }
+          product = getProduct(product.id + "-large");
+        }
+
+        var qty = parseQuantity(text);
+        var isRemove = /빼|삭제|취소|제거/.test(text);
+        if (isRemove) {
+          changeQuantity(product.id, -qty);
+          speak(product.name + " " + qty + "개를 뺐습니다. " + cartSummary());
+        } else {
+          changeQuantity(product.id, qty);
+          speak(product.name + " " + qty + "개를 담았습니다. " + cartSummary());
+        }
+      }
+
+      function scheduleRecognitionRestart() {
+        if (!listeningWanted || speaking || recognizing || !recognition) return;
+        globalThis.setTimeout(function () {
+          if (!listeningWanted || speaking || recognizing) return;
+          try { recognition.start(); } catch (_) {}
+        }, 250);
+      }
+
+      function setupRecognition() {
+        if (globalThis.AiVoicePreflight?.getStatus() === "text") {
+          setStatus("텍스트 주문 모드입니다. 아래 입력창을 이용해 주세요.", false);
+          micButton.disabled = true;
+          return;
+        }
+        var SpeechRecognition = globalThis.SpeechRecognition || globalThis.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          setStatus("이 브라우저는 음성인식을 지원하지 않습니다. 아래 입력창을 이용해 주세요.", false);
+          micButton.disabled = true;
+          return;
+        }
+
+        recognition = new SpeechRecognition();
+        recognition.lang = "ko-KR";
+        recognition.continuous = false;
+        recognition.interimResults = true;
+
+        recognition.onstart = function () {
+          recognizing = true;
+          setStatus("듣고 있습니다. 메뉴와 수량을 말씀해 주세요.", true);
+        };
+
+        recognition.onresult = function (event) {
+          var interim = "";
+          var finalText = "";
+          for (var i = event.resultIndex; i < event.results.length; i += 1) {
+            var value = event.results[i][0].transcript;
+            if (event.results[i].isFinal) finalText += value;
+            else interim += value;
+          }
+          if (interim) transcript.textContent = "듣는 중: “" + interim + "”";
+          if (finalText) executeCommand(finalText);
+        };
+
+        recognition.onerror = function (event) {
+          recognizing = false;
+          if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+            listeningWanted = false;
+            setStatus("마이크 권한이 필요합니다. 브라우저 주소창에서 권한을 허용해 주세요.", false);
+          } else if (event.error !== "no-speech" && event.error !== "aborted") {
+            setStatus("음성인식 오류: " + event.error, false);
+          }
+        };
+
+        recognition.onend = function () {
+          recognizing = false;
+          if (!listeningWanted) setStatus("음성 주문이 중지되었습니다.", false);
+          scheduleRecognitionRestart();
+        };
+      }
+
+      function toggleListening() {
+        if (!recognition) return;
+        listeningWanted = !listeningWanted;
+        if (listeningWanted) {
+          globalThis.speechSynthesis?.cancel();
+          speaking = false;
+          setStatus("주문 유형 안내를 시작합니다.", true);
+          speak(currentOrderMode ? CONFIG.voice[
+            currentOrderMode === "single" ? "singleReady" : currentOrderMode === "set" ? "setReady" : "mixedReady"
+          ] : CONFIG.voice.opening);
+          scheduleRecognitionRestart();
+        } else {
+          try { recognition.stop(); } catch (_) {}
+          setStatus("음성 주문이 중지되었습니다.", false);
+        }
+      }
+
+      menuGrid.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-id][data-delta]");
+        if (!button) return;
+        if (!currentOrderMode) setOrderMode("single", false);
+        changeQuantity(button.dataset.id, Number(button.dataset.delta));
+      });
+
+      orderModeElement.addEventListener("click", function (event) {
+        var button = event.target.closest("[data-mode]");
+        if (!button) return;
+        setOrderMode(button.dataset.mode, true);
+      });
+
+      globalThis.addEventListener("jjajang:voice-preflight", function (event) {
+        if (event.detail?.status === "text") {
+          listeningWanted = false;
+          if (recognition && recognizing) {
+            try { recognition.stop(); } catch (_) {}
+          }
+          micButton.disabled = true;
+          setStatus("텍스트 주문 모드입니다. 아래 입력창을 이용해 주세요.", false);
+        } else if (event.detail?.status === "granted") {
+          micButton.disabled = false;
+          setStatus("마이크 점검이 완료되었습니다. 음성 주문을 시작할 수 있습니다.", false);
+        }
+      });
+
+      micButton.addEventListener("click", toggleListening);
+      commandButton.addEventListener("click", function () {
+        executeCommand(commandInput.value);
+      });
+      commandInput.addEventListener("keydown", function (event) {
+        if (event.key === "Enter") executeCommand(commandInput.value);
+      });
+      checkoutButton.addEventListener("click", goToCheckout);
+      clearButton.addEventListener("click", function () {
+        cart = Object.create(null);
+        renderCart();
+        speak("장바구니를 모두 비웠습니다.");
+      });
+
+      setupRecognition();
+      renderSetMenus();
+      renderCart();
+      globalThis.AiVoicePreflight?.request();
+    })();
+  </script>
+  <aside id="jjajang-detail-character" aria-label="짜장나라 안내 캐릭터" aria-expanded="false" role="button" tabindex="0" title="캐릭터 자세히 보기">
+    <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
+    <div class="detail-character__col">
+      <div class="detail-character__stage"></div>
+      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+    </div>
+  </aside>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
+</body>
+</html>

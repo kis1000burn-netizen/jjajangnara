@@ -1,0 +1,31 @@
+{
+  "name": "jjajangnara",
+  "version": "1.0.0",
+  "description": "짜장나라 주문·포스 연동 Netlify 사이트",
+  "private": true,
+  "scripts": {
+    "test": "node --check netlify/functions/_orders.js && node --check netlify/functions/toss-confirm.js && node --check netlify/functions/pos-orders.js && node --check netlify/functions/store-status.js && node --check pos-sw.js",
+    "build": "node scripts/build-assets.mjs",
+    "minify": "node scripts/build-assets.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kis1000burn-netizen/jjajangnara.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kis1000burn-netizen/jjajangnara/issues"
+  },
+  "homepage": "https://github.com/kis1000burn-netizen/jjajangnara#readme",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.9"
+  },
+  "devDependencies": {
+    "clean-css": "^5.3.3",
+    "javascript-obfuscator": "^4.1.1",
+    "terser": "^5.39.0"
+  }
+}

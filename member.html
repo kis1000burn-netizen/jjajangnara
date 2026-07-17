@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="/favicon.ico" sizes="any" />
+  <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
+  <link rel="apple-touch-icon" href="assets/images/logo.png.png" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
+  <title>회원 · 배달 등록 | 짜장나라 세종본점</title>
+  <meta name="description" content="짜장나라 세종본점 회원 가입 및 배달 정보 등록." />
+  <meta name="robots" content="noindex" />
+  <style>
+    :root {
+      --bg: #111111;
+      --gold: #d9a441;
+      --gold-soft: #f3d28a;
+      --text: #f8f5ee;
+      --sub: #c9c4b7;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      background:
+        radial-gradient(circle at 50% 20%, rgba(217, 164, 65, 0.16), transparent 45%),
+        var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", "Apple SD Gothic Neo", system-ui, sans-serif;
+    }
+    .card {
+      width: min(520px, 100%);
+      display: grid;
+      gap: 1rem;
+      padding: 1.6rem 1.4rem;
+      border-radius: 1.2rem;
+      border: 1px solid rgba(217, 164, 65, 0.28);
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .eyebrow {
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      color: rgba(243, 210, 138, 0.8);
+    }
+    h1 {
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      color: var(--gold-soft);
+      letter-spacing: 0.04em;
+    }
+    p {
+      color: var(--sub);
+      line-height: 1.65;
+      font-size: 0.95rem;
+    }
+    .badge {
+      display: inline-flex;
+      width: fit-content;
+      padding: 0.25rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(217, 164, 65, 0.4);
+      color: var(--gold-soft);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.7rem;
+      margin-top: 0.4rem;
+    }
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 0.65rem 1.15rem;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 0.9rem;
+    }
+    .primary {
+      background: linear-gradient(135deg, var(--gold), var(--gold-soft));
+      color: #111;
+    }
+    .ghost {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text);
+    }
+  </style>
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">PHASE 2</div>
+    <span class="badge">준비중</span>
+    <h1>회원 · 배달 등록</h1>
+    <p>
+      연락처와 배달지 주소를 저장하는 회원 등록은 Phase 2에서 연결됩니다.
+      지금은 주문 화면에서 배달 정보를 입력해 주문할 수 있습니다.
+    </p>
+    <div class="actions">
+      <a class="primary" href="order.html">주문에서 배달정보 입력</a>
+      <a class="ghost" href="index.html">홈으로</a>
+      <a class="ghost" href="ai-order.html">AI 음성 주문</a>
+    </div>
+  </main>
+  <aside id="jjajang-detail-character" aria-label="짜장나라 안내 캐릭터" aria-expanded="false" role="button" tabindex="0" title="캐릭터 자세히 보기">
+    <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
+    <div class="detail-character__col">
+      <div class="detail-character__stage"></div>
+      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+    </div>
+  </aside>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
+</body>
+</html>

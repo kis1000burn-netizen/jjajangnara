@@ -1,0 +1,66 @@
+/* 전역 서체 · 띄어쓰기 우선 줄바꿈 (PC/모바일 공통) */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+
+:root {
+  --jj-font-sans: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic",
+    "Segoe UI", sans-serif;
+  --jj-font-display: "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+}
+
+html {
+  font-family: var(--jj-font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body,
+button,
+input,
+select,
+textarea,
+.eh-btn,
+.eh-speech,
+.eh-brand-title,
+.eh-hint,
+.menu-name,
+.menu-desc,
+.brand,
+.nav-cta {
+  font-family: var(--jj-font-sans) !important;
+}
+
+/* 띄어쓰기(어절) 우선 줄바꿈 — 글자 단위 쪼개짐 방지 */
+body,
+p,
+li,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.menu-desc,
+.menu-name,
+.eh-speech,
+.eh-btn,
+.detail-character__bubble,
+.brand-sub,
+.notice,
+.hint,
+.card,
+.panel {
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  line-break: strict;
+}
+
+/* 브랜드·타이틀: 불필요한 중간 개행 완화 */
+.eh-brand-title,
+.brand > div:first-child,
+h1.eh-brand-title {
+  word-break: keep-all;
+  overflow-wrap: normal;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}

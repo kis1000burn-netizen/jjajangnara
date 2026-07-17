@@ -6,6 +6,9 @@
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
   <link rel="apple-touch-icon" href="assets/images/logo.png.png" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
   <meta name="robots" content="noindex, nofollow" />
   <title>짜장나라 세종본점 | 결제 완료</title>
   <style>
@@ -84,6 +87,9 @@
       font-weight: 700;
     }
   </style>
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
 </head>
 <body>
   <main class="card">
@@ -143,11 +149,11 @@
       }
     }
 
-    async function confirmPayment(paymentKey, orderId, amount) {
+    async function confirmPayment(paymentKey, orderId, amount, orderData) {
       const response = await fetch("/.netlify/functions/toss-confirm", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ paymentKey, orderId, amount }),
+        body: JSON.stringify({ paymentKey, orderId, amount, order: orderData }),
       });
 
       const result = await response.json();
@@ -170,66 +176,44 @@
     }
 
     const params = new URLSearchParams(globalThis.location.search);
-      const paymentKey = params.get("paymentKey");
-      const orderId = params.get("orderId");
-      const amount = params.get("amount");
+    const paymentKey = params.get("paymentKey");
+    const orderId = params.get("orderId");
+    const amount = params.get("amount");
 
+    try {
       if (!paymentKey || !orderId || !amount) {
-        setStatus("결제 완료 정보가 부족합니다. 주문 페이지에서 다시 시도해 주세요.", true);
-        throw new Error("MISSING_PAYMENT_PARAMS");
+        throw new Error("결제 완료 정보가 부족합니다. 주문 페이지에서 다시 시도해 주세요.");
       }
 
       const storedOrder = localStorage.getItem(`${pendingOrderStoragePrefix}${orderId}`);
       if (!storedOrder) {
-        throw new Error("MISSING_PENDING_ORDER");
+        throw new Error("주문 정보가 만료되었거나 확인되지 않습니다. 매장으로 전화 문의해 주세요. 044-589-3888");
       }
 
       const orderData = JSON.parse(storedOrder);
       const alreadySubmitted = localStorage.getItem(`${submittedOrderStoragePrefix}${orderId}`) === "done";
+      const paymentData = await confirmPayment(paymentKey, orderId, amount, orderData);
 
-      try {
-        const paymentData = await confirmPayment(paymentKey, orderId, amount);
-
-        if (!alreadySubmitted) {
-          await submitOrderForm(orderData, paymentData);
-          localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
-        }
-
-        localStorage.removeItem(`${pendingOrderStoragePrefix}${orderId}`);
-        setStatus("결제 승인과 주문 접수가 모두 완료되었습니다. 매장에서 확인 후 연락드릴 예정입니다.");
-        renderSummary(orderData, paymentData);
-      } catch (error) {
-        console.error(error);
-        setStatus(error.message || "결제 확인 중 오류가 발생했습니다.", true);
+      if (!alreadySubmitted) {
+        await submitOrderForm(orderData, paymentData);
+        localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
       }
 
-    try {
-      if (!paymentKey || !orderId || !amount) {
-        setStatus("결제 완료 정보가 부족합니다. 주문 페이지에서 다시 시도해 주세요.", true);
-      } else {
-        const storedOrder = localStorage.getItem(`${pendingOrderStoragePrefix}${orderId}`);
-
-        if (storedOrder) {
-          const orderData = JSON.parse(storedOrder);
-          const alreadySubmitted = localStorage.getItem(`${submittedOrderStoragePrefix}${orderId}`) === "done";
-          const paymentData = await confirmPayment(paymentKey, orderId, amount);
-
-          if (!alreadySubmitted) {
-            await submitOrderForm(orderData, paymentData);
-            localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
-          }
-
-          localStorage.removeItem(`${pendingOrderStoragePrefix}${orderId}`);
-          setStatus("결제 승인과 주문 접수가 모두 완료되었습니다. 매장에서 확인 후 연락드릴 예정입니다.");
-          renderSummary(orderData, paymentData);
-        } else {
-          setStatus("주문 정보가 만료되었거나 확인되지 않습니다. 매장으로 전화 문의해 주세요. 044-589-3888", true);
-        }
-      }
+      localStorage.removeItem(`${pendingOrderStoragePrefix}${orderId}`);
+      setStatus("결제 승인과 매장 포스 주문 접수가 완료되었습니다.");
+      renderSummary(orderData, paymentData);
     } catch (error) {
       console.error(error);
       setStatus(error.message || "결제 확인 중 오류가 발생했습니다.", true);
     }
   </script>
+  <aside id="jjajang-detail-character" aria-label="짜장나라 안내 캐릭터" aria-expanded="false" role="button" tabindex="0" title="캐릭터 자세히 보기">
+    <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
+    <div class="detail-character__col">
+      <div class="detail-character__stage"></div>
+      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+    </div>
+  </aside>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
 </body>
 </html>

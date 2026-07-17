@@ -1,14 +1,6 @@
 /**
  * EntryAnimation (baeby-entry-animation.js 기반)
  * 짜장나라 템플릿 진입 텍스트 애니메이션
- *
- *   EntryAnimation.play({
- *     overlayId: "jjajang-intro-ov",
- *     rowId: "jj-row",
- *     taglineId: "jj-tagline"
- *   }, function () {
- *     // animation finished
- *   });
  */
 (function () {
   var JJAJANG_LETTERS = [
@@ -33,10 +25,125 @@
     { c: "#ffffff", g: "rgba(255,255,255,.9)" }
   ];
 
+  var DOMAIN_RAINBOW = ["#ff6b35", "#ffd166", "#6ee7b7", "#00c8f0", "#c084fc", "#ff80b4", "#e8a735"];
   var activeSkip = null;
+  var domainStyleInjected = false;
+
+  function injectDomainStyles() {
+    if (domainStyleInjected) return;
+    domainStyleInjected = true;
+    if (document.getElementById("jjajang-domain-anim-style")) return;
+
+    var style = document.createElement("style");
+    style.id = "jjajang-domain-anim-style";
+    style.textContent = [
+      "@keyframes jj-domain-grow{",
+      "0%{transform:scale(.55);}",
+      "70%{transform:scale(1.08);}",
+      "100%{transform:scale(1);}",
+      "}",
+      "@keyframes jj-domain-pulse{",
+      "0%,100%{color:#ff6b35;filter:brightness(1);text-shadow:0 0 3px currentColor;transform:scale(1);}",
+      "14%{color:#ffd166;}",
+      "28%{color:#6ee7b7;filter:brightness(1.5);text-shadow:0 0 12px currentColor,0 0 22px currentColor;transform:scale(1.12);}",
+      "42%{color:#00c8f0;}",
+      "57%{color:#c084fc;filter:brightness(1.05);text-shadow:0 0 4px currentColor;transform:scale(1);}",
+      "71%{color:#ff80b4;}",
+      "85%{color:#e8a735;filter:brightness(1.45);text-shadow:0 0 10px currentColor,0 0 18px currentColor;transform:scale(1.08);}",
+      "}",
+      ".jj-domain-anim{",
+      "display:block !important;",
+      "visibility:hidden;",
+      "opacity:0;",
+      "position:relative;",
+      "z-index:2;",
+      "margin:0 auto;",
+      "padding:.15rem .4rem;",
+      "max-width:min(92vw,20rem);",
+      "text-align:center;",
+      "font-size:clamp(.85rem,3.4vw,1.1rem);",
+      "font-weight:800;",
+      "letter-spacing:.04em;",
+      "line-height:1.45;",
+      "transform:scale(.55);",
+      "transform-origin:center center;",
+      "}",
+      ".jj-domain-anim.is-on{",
+      "visibility:visible !important;",
+      "opacity:1 !important;",
+      "animation:jj-domain-grow .9s cubic-bezier(.34,1.35,.64,1) forwards;",
+      "}",
+      ".jj-domain-anim .jj-domain-ch{",
+      "display:inline-block !important;",
+      "font-weight:800;",
+      "will-change:color,filter,text-shadow,transform;",
+      "animation:jj-domain-pulse 2.8s ease-in-out infinite;",
+      "}",
+      "@media (max-width:640px){",
+      ".jj-domain-anim{font-size:clamp(.82rem,3.2vw,.95rem);max-width:min(90vw,16.5rem);}",
+      "}"
+    ].join("");
+    document.head.appendChild(style);
+  }
+
+  function buildDomainNode(id, text) {
+    injectDomainStyles();
+    var el = document.createElement("div");
+    el.id = id;
+    el.className = "jj-domain-anim";
+    el.setAttribute("aria-label", text);
+
+    // 처음에는 숨김 → 큰글자 → 작은글씨 → 도메인 순서로 표시
+    el.style.cssText =
+      "display:block;visibility:hidden;opacity:0;position:relative;z-index:2;" +
+      "margin:0 auto;padding:0.15rem 0.4rem;max-width:min(92vw,20rem);text-align:center;" +
+      "font-size:clamp(0.85rem,3.4vw,1.1rem);font-weight:800;letter-spacing:0.04em;line-height:1.45;" +
+      "transform:scale(0.55);transform-origin:center center;";
+
+    for (var i = 0; i < text.length; i++) {
+      var ch = document.createElement("span");
+      ch.className = "jj-domain-ch";
+      ch.textContent = text.charAt(i);
+      ch.style.color = DOMAIN_RAINBOW[i % DOMAIN_RAINBOW.length];
+      ch.style.display = "inline";
+      ch.style.fontWeight = "800";
+      ch.style.animationDelay = (i * 0.16) + "s";
+      el.appendChild(ch);
+    }
+
+    // 빈 노드 방지용 텍스트 폴백
+    if (!text) {
+      el.textContent = "www.짜장나라.com";
+      el.style.color = "#f3d28a";
+    }
+
+    return el;
+  }
+
+  function showDomain(cfg) {
+    var domain = document.getElementById(cfg.taglineId + "-domain");
+    if (!domain) return;
+    domain.classList.add("is-on");
+    domain.style.visibility = "visible";
+    domain.style.opacity = "1";
+    domain.style.display = "block";
+  }
+
+  function showTagline(cfg) {
+    var tg = document.getElementById(cfg.taglineId);
+    if (!tg) return;
+    tg.style.opacity = "1";
+    tg.style.transform = "translateY(0)";
+  }
 
   function normalizeOptions(options) {
     options = options || {};
+    var vw = 960;
+    try {
+      vw = globalThis.innerWidth || document.documentElement.clientWidth || 960;
+    } catch (_) {}
+    var mobileLetter =
+      vw <= 360 ? 30 : vw <= 400 ? 34 : vw <= 480 ? 38 : vw <= 640 ? 44 : 60;
     return {
       overlayId: options.overlayId || "jjajang-intro-ov",
       rowId: options.rowId || "jj-row",
@@ -44,9 +151,10 @@
       letters: options.letters || JJAJANG_LETTERS,
       cycleColors: options.cycleColors || JJAJANG_CYCLE_COLORS,
       taglineText: options.taglineText || "짜장나라 세종본점",
+      domainText: options.domainText || "www.짜장나라.com",
       skipText: options.skipText || "탭하여 건너뛰기",
       backgroundColor: options.backgroundColor || "#111111",
-      letterWidth: options.letterWidth || 60,
+      letterWidth: options.letterWidth || mobileLetter,
       animMs: options.animMs || 680,
       gapMs: options.gapMs || 255,
       fadeMs: options.fadeMs || 460,
@@ -56,6 +164,7 @@
 
   function createDefaultOverlay(options) {
     var cfg = normalizeOptions(options);
+    injectDomainStyles();
     var ov = document.createElement("div");
     ov.id = cfg.overlayId;
     ov.setAttribute("role", "dialog");
@@ -63,11 +172,39 @@
     ov.style.cssText =
       "position:fixed;inset:0;background:" + cfg.backgroundColor + ";z-index:999999;" +
       "display:flex;flex-direction:column;align-items:center;justify-content:center;" +
-      "gap:22px;cursor:pointer;font-family:'Segoe UI','Apple SD Gothic Neo',system-ui,sans-serif;";
-    ov.innerHTML =
-      '<div id="' + cfg.rowId + '" style="display:flex;align-items:center;justify-content:center;gap:5px;min-height:64px;flex-wrap:wrap;max-width:92vw;padding:0 12px;"></div>' +
-      '<div id="' + cfg.taglineId + '" style="font-size:.88rem;font-weight:700;letter-spacing:.18em;color:rgba(217,164,65,.88);opacity:0;transition:opacity .5s ease,transform .5s ease;transform:translateY(10px);">' + cfg.taglineText + '</div>' +
-      '<div style="position:absolute;bottom:22px;right:26px;font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.1em;">' + cfg.skipText + '</div>';
+      "gap:18px;cursor:pointer;font-family:var(--jj-font-sans,Pretendard,'Noto Sans KR',sans-serif);" +
+      "padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));box-sizing:border-box;";
+
+    var row = document.createElement("div");
+    row.id = cfg.rowId;
+    row.style.cssText =
+      "display:flex;align-items:center;justify-content:center;gap:" +
+      (cfg.letterWidth <= 40 ? "3px" : "5px") +
+      ";min-height:" + Math.round(cfg.letterWidth * 1.1) + "px;" +
+      "flex-wrap:nowrap;max-width:min(96vw,560px);padding:0 8px;overflow:hidden;";
+
+    var tagline = document.createElement("div");
+    tagline.id = cfg.taglineId;
+    tagline.innerHTML =
+      '<span style="white-space:nowrap">짜장나라</span> <span style="white-space:nowrap">세종본점</span>';
+    tagline.style.cssText =
+      "font-size:clamp(.78rem,3.4vw,.92rem);font-weight:700;letter-spacing:.06em;color:rgba(217,164,65,.88);" +
+      "opacity:0;transition:opacity .5s ease,transform .5s ease;transform:translateY(10px);" +
+      "text-align:center;max-width:min(92vw,20rem);word-break:keep-all;line-height:1.35;" +
+      "display:flex;flex-wrap:wrap;justify-content:center;gap:.2em .45em;padding:0 .4rem;";
+
+    var domain = buildDomainNode(cfg.taglineId + "-domain", cfg.domainText);
+
+    var skip = document.createElement("div");
+    skip.textContent = cfg.skipText;
+    skip.style.cssText =
+      "position:absolute;bottom:max(16px,env(safe-area-inset-bottom));right:max(16px,env(safe-area-inset-right));" +
+      "font-size:.68rem;color:rgba(255,255,255,.2);letter-spacing:.1em;";
+
+    ov.appendChild(row);
+    ov.appendChild(tagline);
+    ov.appendChild(domain);
+    ov.appendChild(skip);
     document.body.appendChild(ov);
     return ov;
   }
@@ -81,13 +218,13 @@
       var sp = document.createElement("span");
       sp.id = cfg.rowId + "-ltr-" + i;
       sp.textContent = l.ch;
-      var w = l.dot ? "28" : String(cfg.letterWidth);
-      var fontSize = l.dot ? "2" : "1.55";
+      var w = l.dot ? String(Math.max(18, Math.round(cfg.letterWidth * 0.48))) : String(cfg.letterWidth);
+      var fontSize = l.dot ? "1.35" : cfg.letterWidth <= 36 ? "1.05" : cfg.letterWidth <= 44 ? "1.25" : "1.55";
       sp.style.cssText =
         "display:inline-flex;align-items:center;justify-content:center;" +
-        "width:" + w + "px;height:" + w + "px;" +
+        "width:" + w + "px;height:" + w + "px;flex:0 0 auto;" +
         "font-size:" + fontSize + "rem;font-weight:900;" +
-        "font-family:'Segoe UI','Apple SD Gothic Neo',system-ui,sans-serif;" +
+        "font-family:var(--jj-font-sans,Pretendard,'Noto Sans KR',sans-serif);" +
         "border-radius:50%;border:2px solid transparent;" +
         "color:transparent;background:" + l.bg + ";position:relative;" +
         "opacity:0;transform:translateX(80px) scale(0) rotate(220deg);";
@@ -208,37 +345,41 @@
 
   function runSequence(cfg, ov, onDone) {
     if (!buildLetters(cfg)) { onDone(); return; }
+
+    // 1) 큰 글자 순서 등장
     var lastIdx = cfg.letters.length - 1;
     for (var i = 0; i < cfg.letters.length; i++) {
       (function (idx) {
         setTimeout(function () {
-          animLetter(cfg, idx, idx === lastIdx ? afterAll : null);
+          animLetter(cfg, idx, idx === lastIdx ? afterLetters : null);
         }, idx * cfg.gapMs);
       })(i);
     }
 
-    function afterAll() {
+    // 2) 작은 글씨 → 3) 도메인
+    function afterLetters() {
       setTimeout(function () {
-        var tg = document.getElementById(cfg.taglineId);
-        if (tg) {
-          tg.style.opacity = "1";
-          tg.style.transform = "translateY(0)";
-        }
+        showTagline(cfg);
+
         setTimeout(function () {
-          colorCycleAll(cfg, function () {
-            setTimeout(function () {
-              ov.style.transition = "opacity " + cfg.fadeMs + "ms ease";
-              ov.style.opacity = "0";
+          showDomain(cfg);
+
+          setTimeout(function () {
+            colorCycleAll(cfg, function () {
               setTimeout(function () {
-                if (cfg.removeOverlay) {
-                  try { ov.remove(); } catch (_) {}
-                }
-                onDone();
-              }, cfg.fadeMs + 60);
-            }, 400);
-          });
-        }, 280);
-      }, 80);
+                ov.style.transition = "opacity " + cfg.fadeMs + "ms ease";
+                ov.style.opacity = "0";
+                setTimeout(function () {
+                  if (cfg.removeOverlay) {
+                    try { ov.remove(); } catch (_) {}
+                  }
+                  onDone();
+                }, cfg.fadeMs + 60);
+              }, 500);
+            });
+          }, 450);
+        }, 420);
+      }, 120);
     }
   }
 

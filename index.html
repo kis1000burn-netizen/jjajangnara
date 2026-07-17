@@ -6,11 +6,44 @@
 
   <meta charset="UTF-8" />
 
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <script>
+    (function () {
+      var shouldShowEntry = true;
+      try {
+        shouldShowEntry = globalThis.sessionStorage.getItem("jjajangnara-hub-dismissed") !== "1";
+      } catch (_) {}
+      if (!shouldShowEntry) return;
+      document.documentElement.classList.add("entry-pending");
+      globalThis.__entryRevealFailsafe = globalThis.setTimeout(function () {
+        document.documentElement.classList.remove("entry-pending");
+      }, 10000);
+    })();
+  </script>
+  <style>
+    html.entry-pending {
+      background: #061827;
+    }
+    html.entry-pending body > :not(#jjajang-entry-hub):not(#jjajang-intro-ov):not(#aiVoicePreflight):not(#jjajang-detail-character) {
+      visibility: hidden !important;
+    }
+    html.entry-pending body > #jjajang-entry-hub,
+    html.entry-pending body > #jjajang-intro-ov,
+    html.entry-pending body > #aiVoicePreflight {
+      visibility: visible !important;
+    }
+  </style>
 
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
   <link rel="apple-touch-icon" href="assets/images/logo.png.png" />
+  <link rel="preload" href="assets/character/hyerie_heart.fbx" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="assets/character/hyerie_15.fbx" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="assets/character/hyerie_phone.fbx" as="fetch" crossorigin="anonymous" />
+  <link rel="prefetch" href="assets/character/hyerie_dance1.fbx" as="fetch" crossorigin="anonymous" />
+  <link rel="prefetch" href="assets/character/hyerie_dance2.fbx" as="fetch" crossorigin="anonymous" />
+  <link rel="prefetch" href="assets/character/hyerie_dance3.fbx" as="fetch" crossorigin="anonymous" />
+  <link rel="preload" href="assets/character/hyerie.png" as="image" />
 
   <title>짜장나라 세종본점 - 세종맛집 / 세종짜장 / 세종짬뽕 / 집현동 중식 맛집</title>
 
@@ -40,6 +73,8 @@
       }
     }
   </script>
+  <!-- 진입 애니와 병렬로 FBX preload 시작 -->
+  <script type="module" src="assets/js/dist/hero-character.min.js?v=20260717af"></script>
 
   <!-- JSON-LD 구조화 데이터 -->
   <script type="application/ld+json">
@@ -98,15 +133,17 @@
 
     body {
 
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
-
-        "Noto Sans KR", sans-serif;
+      font-family: var(--jj-font-sans, "Pretendard", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif);
 
       background: var(--bg-dark);
 
       color: var(--text-main);
 
       line-height: 1.6;
+
+      word-break: keep-all;
+
+      overflow-wrap: break-word;
 
     }
 
@@ -162,6 +199,8 @@
 
       z-index: 50;
 
+      padding-top: env(safe-area-inset-top, 0px);
+
       -webkit-backdrop-filter: blur(12px);
       backdrop-filter: blur(12px);
 
@@ -187,7 +226,7 @@
 
       margin: 0 auto;
 
-      padding: 1.3rem 1.95rem;
+      padding: 0.9rem 1.95rem;
 
       display: flex;
 
@@ -196,6 +235,10 @@
       justify-content: space-between;
 
       gap: 1.95rem;
+
+      min-height: 72px;
+
+      box-sizing: border-box;
 
     }
 
@@ -214,6 +257,18 @@
       letter-spacing: 0.06em;
 
       font-size: 1.43rem;
+
+      color: inherit;
+
+      text-decoration: none;
+
+      cursor: pointer;
+
+    }
+
+    .brand:hover .brand-logo {
+
+      border-color: rgba(168, 229, 251, 0.55);
 
     }
 
@@ -525,7 +580,7 @@
 
     .hero-media {
 
-      margin-top: 80px;
+      margin-top: calc(88px + env(safe-area-inset-top, 0px));
 
       padding: 0;
 
@@ -581,9 +636,23 @@
 
       margin-top: 0;
 
+      padding-top: calc(88px + env(safe-area-inset-top, 0px));
+
       overflow: visible;
 
       background: linear-gradient(180deg, #0b0b0b 0%, #161616 100%);
+
+    }
+
+    .hero-media:not([hidden]) + .hero {
+
+      padding-top: 0;
+
+    }
+
+    html {
+
+      scroll-padding-top: calc(96px + env(safe-area-inset-top, 0px));
 
     }
 
@@ -2839,13 +2908,18 @@
 
   </style>
 
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
 </head>
 
 <body>
 
   <!-- 헤더 -->
+  <header>
+    <div class="nav-inner">
 
-      <div class="brand">
+      <a href="index.html?entry=1" class="brand" id="headerBrandHome" aria-label="첫 화면으로 이동">
 
         <div class="brand-logo">
 
@@ -2861,7 +2935,7 @@
 
         </div>
 
-      </div>
+      </a>
 
 
 
@@ -2898,19 +2972,17 @@
 
 
 
-  <!-- 홈 영상 -->
+  <!-- 홈 영상: 매장 둘러보기 선택 시에만 표시 -->
 
-  <section class="hero-media" id="home" aria-label="매장 소개 영상">
+  <section class="hero-media" id="home" aria-label="매장 소개 영상" hidden>
 
-    <video id="heroVideo" autoplay muted loop preload="auto" webkit-playsinline="true" x5-playsinline="true" x5-video-player-type="h5" x5-video-player-fullscreen="true" aria-label="짜장나라 세종본점 매장 타임랩스 영상">
+    <video id="heroVideo" muted loop preload="none" playsinline webkit-playsinline="true" x5-playsinline="true" x5-video-player-type="h5" x5-video-player-fullscreen="true" aria-label="짜장나라 세종본점 매장 타임랩스 영상">
 
       <track kind="captions" srclang="ko" src="assets/video/store-timelapse.ko.vtt" label="한국어 자막" default />
 
       <track kind="descriptions" srclang="ko" src="assets/video/store-timelapse.desc.ko.vtt" label="한국어 영상 설명" />
 
       <source src="assets/video/store-timelapse.mp4.mp4" type="video/mp4" />
-
-      <!-- 영상이 안 뜰 때를 대비한 백업 텍스트 -->
 
       브라우저가 영상을 지원하지 않습니다.
 
@@ -3125,7 +3197,7 @@
 
             <div class="menu-name">짜장면</div>
 
-            <div class="menu-price">7,000원</div>
+            <div class="menu-price">8,000원</div>
 
           </div>
 
@@ -3317,7 +3389,7 @@
 
             <div class="menu-name">볶음밥</div>
 
-            <div class="menu-price">9,000원</div>
+            <div class="menu-price">10,000원</div>
 
           </div>
 
@@ -3349,7 +3421,7 @@
 
             <div class="menu-name">잡채밥</div>
 
-            <div class="menu-price">10,000원</div>
+            <div class="menu-price">11,000원</div>
 
           </div>
 
@@ -3378,7 +3450,7 @@
 
             <div class="menu-name">제육덮밥</div>
 
-            <div class="menu-price">10,000원</div>
+            <div class="menu-price">11,000원</div>
 
           </div>
 
@@ -3419,38 +3491,6 @@
             다양한 중화요리 재료를 밥 위에 올린 중화비빔밥.
 
             건강하고 맛있는 한 끼 식사입니다.
-
-          </p>
-
-          <a href="order.html" class="menu-order-btn">주문하기</a>
-
-        </article>
-
-
-
-        <!-- 메뉴 카드 12 -->
-
-        <article class="menu-card">
-
-          <div class="menu-image">
-
-            <img src="assets/images/menu-1.jpg.jpg" alt="세종 짜장밥 맛집 짜장나라 대표메뉴 짜장밥" loading="eager" />
-
-          </div>
-
-          <div class="menu-meta">
-
-            <div class="menu-name">짜장밥</div>
-
-            <div class="menu-price">8,000원</div>
-
-          </div>
-
-          <p class="menu-desc">
-
-            진공반죽면 대신 밥에 짜장을 올린 든든한 한 끼.
-
-            면보다 더 든든하고 맛있게 즐길 수 있습니다.
 
           </p>
 
@@ -3963,6 +4003,11 @@
 
 
 
+  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260717af"></script>
+  <script src="assets/js/dist/entry-animation.min.js?v=20260717af"></script>
+  <script src="assets/js/dist/detail-character-preload.min.js?v=20260717af"></script>
+  <script src="assets/js/dist/entry-hub.min.js?v=20260717af"></script>
+
   <script>
 
     // 네비게이션 토글 (모바일)
@@ -4162,6 +4207,7 @@
       closeMinutes: 20 * 60,
     };
     let businessStatusEditorPanelOpen = false;
+    let storeRuntimeStatus = null;
 
 
 
@@ -4756,6 +4802,28 @@
 
 
 
+    async function fetchStoreRuntimeStatus() {
+      try {
+        const response = await fetch("/.netlify/functions/store-status", { cache: "no-store" });
+        const result = await response.json();
+        storeRuntimeStatus = response.ok ? result : {
+          posOnline: false,
+          deliveryAvailable: false,
+          holiday: false,
+          holidayMessage: "",
+        };
+      } catch (error) {
+        console.log("포스 운영 상태를 확인하지 못했습니다:", error);
+        storeRuntimeStatus = {
+          posOnline: false,
+          deliveryAvailable: false,
+          holiday: false,
+          holidayMessage: "",
+        };
+      }
+      updateBusinessStatusLamp();
+    }
+
     function updateBusinessStatusLamp() {
 
       const statusElement = document.getElementById("businessStatus");
@@ -4788,11 +4856,24 @@
       const closeMinutes = businessHours.closeMinutes;
       const isOpen = currentMinutes >= openMinutes && currentMinutes < closeMinutes;
 
+      if (storeRuntimeStatus?.holiday) {
+        statusElement.classList.add("is-closed");
+        statusElement.classList.remove("is-open");
+        statusTitle.textContent = "오늘은 휴무일";
+        statusDetail.textContent = storeRuntimeStatus.holidayMessage || "오늘은 휴무일입니다.";
+        return;
+      }
+
       if (overrideMode === "open") {
         statusElement.classList.add("is-open");
         statusElement.classList.remove("is-closed");
-        statusTitle.textContent = "현재 영업중";
-        statusDetail.textContent = `관리자 설정으로 영업중 표시중 · 자동 시간 ${businessHoursDisplay}`;
+        if (storeRuntimeStatus?.posOnline) {
+          statusTitle.textContent = "배달·홀 영업중";
+          statusDetail.textContent = `배달 주문 가능 · 자동 시간 ${businessHoursDisplay}`;
+        } else {
+          statusTitle.textContent = "홀 영업중";
+          statusDetail.textContent = "포스 미연결로 현재 배달 주문은 불가능합니다";
+        }
         return;
       }
 
@@ -4808,8 +4889,13 @@
       statusElement.classList.toggle("is-closed", !isOpen);
 
       if (isOpen) {
-        statusTitle.textContent = "현재 영업중";
-        statusDetail.textContent = `${businessHoursDisplay} 영업 · 지금 바로 주문 가능합니다`;
+        if (storeRuntimeStatus?.posOnline) {
+          statusTitle.textContent = "배달·홀 영업중";
+          statusDetail.textContent = `${businessHoursDisplay} 영업 · 지금 바로 배달 주문 가능합니다`;
+        } else {
+          statusTitle.textContent = "홀 영업중";
+          statusDetail.textContent = "포스 앱이 실행되지 않아 현재 배달 주문은 불가능합니다";
+        }
         return;
       }
 
@@ -4822,59 +4908,100 @@
       statusTitle.textContent = "영업 종료";
       statusDetail.textContent = `${formatBusinessTime(openMinutes)}에 다시 영업을 시작합니다`;
     }
-    // 비디오 재생 강제 (모바일 대응)
+    // 비디오는 '매장 둘러보기'에서만 재생 (자동 재생 비활성)
 
     const heroVideo = document.getElementById("heroVideo");
 
     if (heroVideo) {
-
-      heroVideo.addEventListener("loadedmetadata", function() {
-
-        heroVideo.play().catch(function(error) {
-
-          console.log("비디오 자동 재생 실패, 사용자 상호작용 대기:", error);
-
-        });
-
-      });
-
-      // 모바일에서 재생 보장
-
-      heroVideo.addEventListener("canplay", function() {
-
-        heroVideo.play().catch(function(error) {
-
-          console.log("비디오 재생 시도:", error);
-
-        });
-
-      });
-
+      heroVideo.removeAttribute("autoplay");
+      heroVideo.setAttribute("preload", "none");
     }
 
 
 
-    function initEntryAnimation() {
+    function openEntryHub(options) {
+      options = options || {};
 
-      if (!globalThis.EntryAnimation) {
+      if (!globalThis.EntryHub) {
+
+        return;
+
+      }
+
+      if (!options.force && !globalThis.EntryHub.shouldOpenOnLoad()) {
 
         return;
 
       }
 
-      if (globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      if (!options.force && globalThis.location.hash && globalThis.location.hash !== "#home") {
 
         return;
 
       }
+
+      globalThis.EntryHub.open(options);
+
+    }
+
+    function returnToEntryScreen(event) {
+      if (event) {
+        event.preventDefault();
+      }
+      if (globalThis.EntryHub && typeof globalThis.EntryHub.reopenHomeEntry === "function") {
+        globalThis.EntryHub.reopenHomeEntry();
+        return;
+      }
+      try {
+        globalThis.sessionStorage.removeItem("jjajangnara-hub-dismissed");
+        globalThis.sessionStorage.removeItem("jjajangnara-intro-seen");
+      } catch (_) {}
+      globalThis.location.href = "index.html?entry=1";
+    }
+
+
+
+    function initHomeEntry() {
+      var forceEntry = false;
+      try {
+        forceEntry = new URLSearchParams(globalThis.location.search).get("entry") === "1";
+        if (forceEntry) {
+          if (globalThis.EntryHub && typeof globalThis.EntryHub.clearEntryDismissal === "function") {
+            globalThis.EntryHub.clearEntryDismissal();
+          } else {
+            globalThis.sessionStorage.removeItem("jjajangnara-hub-dismissed");
+            globalThis.sessionStorage.removeItem("jjajangnara-intro-seen");
+          }
+          globalThis.history.replaceState({}, "", globalThis.location.pathname);
+        }
+      } catch (error) {
+        console.log("진입 강제 파라미터 확인 실패:", error);
+      }
+
+      // 진입 애니 시작과 동시에 3D 캐릭터 preload (허브 표시 시점 대기 최소화)
+      if (globalThis.HeroCharacter && typeof globalThis.HeroCharacter.preload === "function") {
+        globalThis.HeroCharacter.preload().catch(function (error) {
+          console.log("3D 캐릭터 사전 로딩 실패, 대체 이미지를 사용합니다:", error);
+        });
+      }
+
+      var reduceMotion = false;
 
       try {
 
-        if (globalThis.sessionStorage.getItem("jjajangnara-intro-seen")) {
+        reduceMotion = globalThis.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-          return;
+      } catch (error) {
 
-        }
+        console.log("모션 설정 확인 실패:", error);
+
+      }
+
+      var introSeen = false;
+
+      try {
+
+        introSeen = !forceEntry && globalThis.sessionStorage.getItem("jjajangnara-intro-seen") === "1";
 
       } catch (error) {
 
@@ -4882,10 +5009,24 @@
 
       }
 
+      var canPlayIntro = globalThis.EntryAnimation && !reduceMotion && !introSeen;
+
+      if (!canPlayIntro) {
+
+        openEntryHub({ force: forceEntry });
+
+        return;
+
+      }
+
+      // 서비스 화면을 진입 오버레이 뒤에 먼저 준비해 중간 화면 노출을 방지한다.
+      // 캐릭터 동작은 진입 애니메이션 종료 후 시작한다.
+      openEntryHub({ force: forceEntry, deferCharacterStart: true });
       document.body.classList.add("is-intro-playing");
 
       globalThis.EntryAnimation.play({
         taglineText: "짜장나라 세종본점",
+        domainText: "www.짜장나라.com",
         skipText: "탭하여 건너뛰기",
         backgroundColor: "#111111"
       }, function () {
@@ -4902,6 +5043,13 @@
 
         }
 
+        if (
+          globalThis.EntryHub &&
+          typeof globalThis.EntryHub.activateCharacter === "function"
+        ) {
+          globalThis.EntryHub.activateCharacter();
+        }
+
       });
 
     }
@@ -4913,10 +5061,20 @@
 
     globalThis.addEventListener("DOMContentLoaded", function() {
 
-      initEntryAnimation();
+      if (globalThis.EntryHub && typeof globalThis.EntryHub.initStoreVideoGate === "function") {
+        globalThis.EntryHub.initStoreVideoGate();
+      }
+
+      initHomeEntry();
       updateBusinessHoursText();
       initBusinessStatusEditor();
       updateBusinessStatusLamp();
+      fetchStoreRuntimeStatus();
+
+      var brandHome = document.getElementById("headerBrandHome");
+      if (brandHome) {
+        brandHome.addEventListener("click", returnToEntryScreen);
+      }
 
       initNaverMap();
 
@@ -4925,14 +5083,20 @@
       initMapTabs();
 
       globalThis.setInterval(updateBusinessStatusLamp, 60000);
+      globalThis.setInterval(fetchStoreRuntimeStatus, 20000);
 
     });
 
   </script>
 
-  <script src="assets/js/entry-animation.js"></script>
-
-  <script type="module" src="assets/js/hero-character.js"></script>
+  <aside id="jjajang-detail-character" aria-label="짜장나라 안내 캐릭터" aria-expanded="false" role="button" tabindex="0" title="캐릭터 자세히 보기">
+    <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
+    <div class="detail-character__col">
+      <div class="detail-character__stage"></div>
+      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+    </div>
+  </aside>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
 
 </body>
 

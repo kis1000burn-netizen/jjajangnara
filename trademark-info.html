@@ -6,6 +6,9 @@
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
   <link rel="apple-touch-icon" href="assets/images/logo.png.png" />
+    <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
   <title>짜장나라 상표 출원 정보</title>
   <style>
     * {
@@ -208,6 +211,9 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
 </head>
 <body>
   <div class="container">
@@ -306,5 +312,13 @@
       <p style="margin-top: 0.5rem; color: #d9a441;">※ 해당 사이트는 로그인이 필요할 수 있습니다.</p>
     </div>
   </div>
+  <aside id="jjajang-detail-character" aria-label="짜장나라 안내 캐릭터" aria-expanded="false" role="button" tabindex="0" title="캐릭터 자세히 보기">
+    <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
+    <div class="detail-character__col">
+      <div class="detail-character__stage"></div>
+      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+    </div>
+  </aside>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
 </body>
 </html>

@@ -1,0 +1,7 @@
+{
+  "siteUrl": "https://짜장나라.com",
+  "apiToken": "NETLIFY_POS_API_TOKEN과_동일한_값",
+  "counterPrinter": "카운터 영수증 프린터 이름",
+  "kitchenPrinter": "주방 프린터 이름",
+  "pollSeconds": 4
+}

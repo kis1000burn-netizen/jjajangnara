@@ -1,8 +1,8 @@
 # Netlify 배포 설정 파일
 
 [build]
-  # 빌드 명령어 (정적 사이트이므로 불필요)
-  # publish = "."
+  command = "npm run build"
+  publish = "."
 
 [functions]
   directory = "netlify/functions"
@@ -32,6 +32,18 @@
   for = "/payment-fail.html"
   [headers.values]
     X-Robots-Tag = "noindex, nofollow"
+
+[[headers]]
+  for = "/pos.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
+  for = "/pos-sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Service-Worker-Allowed = "/"
 
 # 리다이렉트 설정 (필요시)
 # [[redirects]]

@@ -6,6 +6,9 @@
   <link rel="icon" href="/favicon.ico" sizes="any" />
   <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
   <link rel="apple-touch-icon" href="assets/images/logo.png.png" />
+  <script type="importmap">
+    {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+  </script>
   <title>짜장나라 세종본점 | 바로주문</title>
   <meta name="description" content="짜장나라 세종본점 바로주문. 혼밥세트/달달커플세트/패밀리세트 부페식 구성, 메인 메뉴별 곱빼기 선택 가능."/>
   <style>
@@ -250,6 +253,11 @@
     .main-actions{
       display:flex; gap:6px; align-items:center;
     }
+    .main-actions select{
+      min-height:38px; max-width:220px; padding:6px 10px; border-radius:8px;
+      border:1px solid var(--line); background:var(--btn); color:var(--text);
+      font:inherit;
+    }
     .toggle{
       display:inline-flex; align-items:center; gap:6px; font-size:12px; color:var(--muted);
       background:#0c0f14; border:1px solid var(--line); padding:4px 8px; border-radius:8px;
@@ -267,7 +275,8 @@
     @media (max-width:600px){
       .toggle{padding:6px 10px; font-size:13px;}
       .toggle input{width:20px; height:20px;}
-      .main-actions{flex-direction:column; gap:8px; width:100%;}
+      .main-actions{flex-direction:column; align-items:stretch; gap:8px; width:100%;}
+      .main-actions select{max-width:none; width:100%; min-height:44px;}
       .main-top{flex-direction:column; align-items:flex-start; gap:10px;}
     }
     .main-selected{
@@ -553,6 +562,9 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
 </head>
 
 <body>
@@ -625,7 +637,7 @@
     <h2><span class="bar"></span>2. 세트 메뉴 (부페식 선택)</h2>
     <div class="hint">
       세트는 <b>통합가격</b>이며, 메인은 "택1 / 택2 / 택3" 방식입니다.<br/>
-      각 메인 메뉴마다 <b>곱빼기</b>를 개별 적용할 수 있습니다(+1,000원/개).
+      같은 기본 메뉴를 중복 선택할 수 있으며 변경 메뉴 추가금과 곱빼기(+1,000원/개)가 개별 적용됩니다.
     </div>
 
     <div class="grid cols-3 sets-grid-top">
@@ -635,7 +647,7 @@
         <div class="set-desc">
           필수 포함: <b>초미니 탕수육 1개</b><br/>
           메인: 7개 중 <b>택 1</b><br/>
-          곱빼기 선택 시 +1,000원
+          변경 메뉴 +1,000원~+3,000원
         </div>
         <button class="btn big acc" type="button" onclick="openBuilder('solo')">혼밥세트로 구매하기</button>
       </div>
@@ -646,7 +658,7 @@
         <div class="set-desc">
           필수 포함: <b>초미니 탕수육 1개</b><br/>
           메인: 7개 중 <b>택 2</b><br/>
-          곱빼기 선택 시 +1,000원
+          동일 메뉴 2개 선택 가능
         </div>
         <button class="btn big acc" type="button" onclick="openBuilder('couple')">달달커플세트로 구매하기</button>
       </div>
@@ -657,7 +669,7 @@
         <div class="set-desc">
           필수 포함: <b>미니 탕수육 1개</b><br/>
           메인: 7개 중 <b>택 3</b><br/>
-          곱빼기 선택 시 +1,000원
+          동일 메뉴 중복 선택 가능
         </div>
         <button class="btn big acc" type="button" onclick="openBuilder('family')">패밀리세트로 구매하기</button>
       </div>
@@ -781,28 +793,38 @@
 
   // 단품 메뉴 (가격 표시)
   const singles = [
-    { id:"jjajang", name:"짜장면", price:9000 },
+    { id:"jjajang", name:"짜장면", price:8000 },
     { id:"jjambbong", name:"짬뽕", price:9000 },
-    { id:"tangmini", name:"초미니탕수육", price:11000 },
-    { id:"tangjung", name:"탕수육(중)", price:16000 },
-    { id:"jjajangbap", name:"짜장밥", price:10000 },
+    { id:"jjamjja", name:"짬짜면", price:9000 },
+    { id:"kongguksu", name:"콩국수", price:10000 },
+    { id:"chadol-jjambbong", name:"차돌짬뽕", price:12000 },
+    { id:"tangmini", name:"미니탕수육", price:12000 },
+    { id:"tangjung", name:"탕수육(중)", price:17000 },
     { id:"jjambbongbap", name:"짬뽕밥", price:10000 },
     { id:"bokkeumbap", name:"볶음밥", price:10000 },
     { id:"mapabap", name:"마파두부밥", price:10000 },
     { id:"bibimbap", name:"중화비빔밥", price:10000 },
     { id:"jeyukbap", name:"제육덮밥", price:11000 },
     { id:"japchaebap", name:"잡채밥", price:11000 },
+    { id:"jjajang-large", name:"짜장면 곱빼기", price:9000, aiOnly:true },
+    { id:"jjambbong-large", name:"짬뽕 곱빼기", price:10000, aiOnly:true },
+    { id:"jjambbongbap-large", name:"짬뽕밥 곱빼기", price:11000, aiOnly:true },
+    { id:"kongguksu-large", name:"콩국수 곱빼기", price:11000, aiOnly:true },
+    { id:"chadol-jjambbong-large", name:"차돌짬뽕 곱빼기", price:13000, aiOnly:true },
+    { id:"bokkeumbap-large", name:"볶음밥 곱빼기", price:11000, aiOnly:true },
+    { id:"bibimbap-large", name:"중화비빔밥 곱빼기", price:11000, aiOnly:true },
+    { id:"jeyukbap-large", name:"제육덮밥 곱빼기", price:12000, aiOnly:true },
   ];
 
   // 세트 메인 7개 (세트영역에는 가격 표시 X)
   const mains = [
-    { id:"m1", name:"짜장면" },
-    { id:"m2", name:"짬뽕" },
-    { id:"m3", name:"볶음밥" },
-    { id:"m4", name:"마파두부밥" },
-    { id:"m5", name:"중화비빔밥" },
-    { id:"m6", name:"제육덮밥" },
-    { id:"m7", name:"잡채밥" },
+    { id:"m1", name:"짜장면", extra:0 },
+    { id:"m2", name:"짬뽕", extra:0 },
+    { id:"m3", name:"짬짜면", extra:1000 },
+    { id:"m4", name:"볶음밥", extra:1000 },
+    { id:"m5", name:"중화비빔밥", extra:1000 },
+    { id:"m6", name:"제육덮밥", extra:2000 },
+    { id:"m7", name:"잡채밥", extra:3000 },
   ];
 
   const setRules = {
@@ -813,6 +835,8 @@
 
   const EXTRA_DOUBLE = 1000;
   const pendingOrderStoragePrefix = "jjajangnara-pending-order:";
+  const aiCartStorageKey = "jjajangnara-ai-cart";
+  const requestedOrderMode = new URLSearchParams(globalThis.location.search).get("mode");
 
   /* ===== 상태 ===== */
   let activeSetKey = null;
@@ -921,7 +945,7 @@
     const box = document.getElementById("singleList");
     box.innerHTML = "";
 
-    singles.forEach(item=>{
+    singles.filter(item=>!item.aiOnly).forEach(item=>{
       const row = document.createElement("div");
       row.className = "item-row";
       row.innerHTML = `
@@ -995,71 +1019,53 @@
     must.innerHTML = `
       필수 구성: <b>${R.must}</b><br/>
       아래 메인 7개 중 <b>${R.pick}개</b> 선택하세요.<br/>
+      짬짜면·볶음밥·중화비빔밥 +1,000원 / 제육덮밥 +2,000원 / 잡채밥 +3,000원<br/>
       선택한 메인마다 곱빼기 가능(+1,000원/개)
     `;
 
     grid.innerHTML = "";
-    mains.forEach(m=>{
-      const state = selectedMains[m.id] || {selected:false, double:false};
-      const stateText = getBuilderStateText(state);
-      const doubleClass = state.selected ? "" : "main-toggle-disabled";
-
+    for(let slot=0; slot<R.pick; slot+=1){
+      const state = selectedMains[slot] || {mainId:"", double:false};
+      const selectedMenu = mains.find(m=>m.id===state.mainId);
+      const options = mains.map(m=>
+        `<option value="${m.id}" ${state.mainId===m.id?"selected":""}>${m.name}${m.extra ? ` (+${won(m.extra)})` : ""}</option>`
+      ).join("");
       const card = document.createElement("div");
-      card.className = "main-card" + (state.selected ? " main-selected" : "");
+      card.className = "main-card" + (selectedMenu ? " main-selected" : "");
       card.innerHTML = `
         <div class="main-top">
-          <div class="main-name">${m.name}</div>
+          <div class="main-name">메인 ${slot+1}</div>
           <div class="main-actions">
-            <label class="toggle">
-              <input type="checkbox" data-action="select" data-id="${m.id}" ${state.selected?"checked":""}/>
-              선택
-            </label>
-            <label class="toggle ${doubleClass}">
-              <input type="checkbox" data-action="double" data-id="${m.id}" ${state.double?"checked":""}/>
+            <select data-action="menu" data-slot="${slot}" aria-label="메인 ${slot+1} 메뉴 선택">
+              <option value="">메뉴 선택</option>
+              ${options}
+            </select>
+            <label class="toggle ${selectedMenu ? "" : "main-toggle-disabled"}">
+              <input type="checkbox" data-action="double" data-slot="${slot}" ${state.double?"checked":""} ${selectedMenu?"":"disabled"}/>
               곱빼기(+1,000)
             </label>
           </div>
         </div>
         <div class="hint builder-state-note">
-          ${stateText}
+          ${selectedMenu ? `${selectedMenu.name}${state.double ? " · 곱빼기" : ""}` : "메뉴를 선택해 주세요."}
         </div>
       `;
       grid.appendChild(card);
+    }
+
+    grid.querySelectorAll('[data-action="menu"]').forEach(select=>{
+      select.addEventListener("change", ()=>{
+        const slot = Number(select.dataset.slot);
+        selectedMains[slot] = {mainId:select.value, double:false};
+        renderBuilder();
+      });
     });
-
-    // 이벤트 연결
-    grid.querySelectorAll("input[type=checkbox]").forEach(chk=>{
+    grid.querySelectorAll('[data-action="double"]').forEach(chk=>{
       chk.addEventListener("change", ()=>{
-        const id = chk.dataset.id;
-        const action = chk.dataset.action;
-
-        const cur = selectedMains[id] || {selected:false, double:false};
-        if(action==="select"){
-          if(chk.checked){
-            // 최대 개수 제한
-            const countSelected = Object.values(selectedMains).filter(v=>v.selected).length;
-            if(countSelected >= setRules[activeSetKey].pick){
-              chk.checked = false;
-              alert(`메인은 ${setRules[activeSetKey].pick}개까지만 선택 가능합니다.`);
-              return;
-            }
-            cur.selected = true;
-          }else{
-            cur.selected = false;
-            cur.double = false;
-          }
-          selectedMains[id] = cur;
-        }
-
-        if(action==="double"){
-          if(!cur.selected){
-            chk.checked = false;
-            return;
-          }
-          cur.double = chk.checked;
-          selectedMains[id] = cur;
-        }
-
+        const slot = Number(chk.dataset.slot);
+        const cur = selectedMains[slot] || {mainId:"", double:false};
+        cur.double = Boolean(cur.mainId && chk.checked);
+        selectedMains[slot] = cur;
         renderBuilder();
       });
     });
@@ -1081,8 +1087,10 @@
     }
     const R = setRules[activeSetKey];
 
-    const doubles = Object.values(selectedMains).filter(v=>v.selected && v.double).length;
-    const extra = doubles * EXTRA_DOUBLE;
+    const selectedEntries = Object.entries(selectedMains).filter(([_,v])=>v.mainId);
+    const doubles = selectedEntries.filter(([_,v])=>v.double).length;
+    const menuExtra = selectedEntries.reduce((sum,[_,v])=>sum + (mains.find(m=>m.id===v.mainId)?.extra || 0),0);
+    const extra = menuExtra + doubles * EXTRA_DOUBLE;
     const total = R.price + extra;
 
     baseEl.textContent = won(R.price);
@@ -1097,20 +1105,21 @@
       return;
     }
     const R = setRules[activeSetKey];
-    const picks = Object.entries(selectedMains).filter(([_,v])=>v.selected);
+    const picks = Object.entries(selectedMains).filter(([_,v])=>v.mainId);
 
     if(picks.length !== R.pick){
       alert(`메인을 ${R.pick}개 선택해야 합니다. (현재 ${picks.length}개)`);
       return;
     }
 
-    const mainsText = picks.map(([id,v])=>{
-      const name = mains.find(m=>m.id===id).name;
+    const mainsText = picks.map(([_,v])=>{
+      const name = mains.find(m=>m.id===v.mainId).name;
       return v.double ? `${name}(곱빼기)` : name;
     }).join(", ");
 
     const doubles = picks.filter(([_,v])=>v.double).length;
-    const extra = doubles * EXTRA_DOUBLE;
+    const menuExtra = picks.reduce((sum,[_,v])=>sum + (mains.find(m=>m.id===v.mainId)?.extra || 0),0);
+    const extra = menuExtra + doubles * EXTRA_DOUBLE;
     const total = R.price + extra;
 
     cart.push({
@@ -1124,10 +1133,13 @@
     selectedMains = {};
     renderBuilder();
     renderCart();
-    alert("장바구니에 담았습니다!");
-    
-    // 주문정보 섹션으로 이동
-    goOrderInfo();
+    if(requestedOrderMode === "mixed"){
+      alert("세트를 담았습니다. 단품 메뉴를 추가한 뒤 주문정보를 입력해 주세요.");
+      document.getElementById("single")?.scrollIntoView({behavior:"smooth", block:"start"});
+    }else{
+      alert("장바구니에 담았습니다!");
+      goOrderInfo();
+    }
   }
   
   /* ===== 주문정보 섹션으로 이동 ===== */
@@ -1177,6 +1189,55 @@
     renderCart();
   }
 
+  function importAiCart(){
+    let savedCart = null;
+    let importedCount = 0;
+    try{
+      savedCart = JSON.parse(globalThis.localStorage.getItem(aiCartStorageKey) || "null");
+      globalThis.localStorage.removeItem(aiCartStorageKey);
+    }catch(error){
+      console.log("AI 장바구니를 불러오지 못했습니다:", error);
+      return;
+    }
+
+    if(!Array.isArray(savedCart) || savedCart.length === 0){
+      return;
+    }
+
+    savedCart.forEach(savedItem=>{
+      const item = singles.find(single=>single.id === savedItem?.id);
+      const qty = Math.min(20, Math.max(0, Number.parseInt(savedItem?.qty || "0", 10)));
+      if(!item || qty === 0){
+        return;
+      }
+
+      cart = cart.filter(entry=>!(entry.type === "single" && entry.id === item.id));
+      cart.push({
+        type:"single",
+        id:item.id,
+        name:item.name,
+        price:item.price * qty,
+        detail:`수량 ${qty}개 · AI 음성 주문`
+      });
+
+      const input = document.querySelector(`input[data-id="${item.id}"]`);
+      if(input){
+        input.value = qty;
+      }
+      importedCount += 1;
+    });
+
+    if(importedCount > 0){
+      const orderSection = document.getElementById("order-info");
+      orderSection?.classList.remove("hidden");
+      if(globalThis.location.hash === "#order-info"){
+        globalThis.setTimeout(()=>{
+          orderSection?.scrollIntoView({behavior:"smooth", block:"start"});
+        }, 80);
+      }
+    }
+  }
+
   async function requestTossPayment(orderData){
     const tossPayments = globalThis.TossPayments(paymentConfig.tossClientKey);
     const orderId = createOrderId();
@@ -1197,6 +1258,21 @@
       successUrl: buildSuccessUrl(),
       failUrl: buildFailUrl(),
     });
+  }
+
+  async function verifyDeliveryAvailability(){
+    const response = await fetch("/.netlify/functions/store-status", { cache:"no-store" });
+    const status = await response.json();
+    if(!response.ok){
+      throw new Error("매장 배달 접수 상태를 확인하지 못했습니다.");
+    }
+    if(status.holiday){
+      throw new Error(status.holidayMessage || "오늘은 휴무일로 배달 주문이 불가능합니다.");
+    }
+    if(!status.deliveryAvailable){
+      throw new Error("현재 홀 영업중이나 포스 앱이 실행되지 않아 배달 주문은 불가능합니다.");
+    }
+    return status;
   }
 
   /* ===== 구매하기(결제) 버튼 ===== */
@@ -1220,6 +1296,13 @@
     const paymentConfigError = getPaymentConfigError();
     if(paymentConfigError){
       setOrderSubmitStatus("error", paymentConfigError);
+      return;
+    }
+
+    try{
+      await verifyDeliveryAvailability();
+    }catch(error){
+      setOrderSubmitStatus("error", `${error.message} 전화 주문: 044-589-3888`);
       return;
     }
 
@@ -1354,6 +1437,11 @@
   /* ===== 시작 ===== */
   renderSingles();
   renderBuilder();
+  const requestedSetKey = new URLSearchParams(globalThis.location.search).get("set");
+  if(requestedSetKey && setRules[requestedSetKey]){
+    globalThis.setTimeout(()=>openBuilder(requestedSetKey), 80);
+  }
+  importAiCart();
   renderCart();
   
   // 팝업 토글 UI 초기화
@@ -1364,6 +1452,13 @@
     showEventPopup();
   }, 1000);
 </script>
-
+  <aside id="jjajang-detail-character" aria-label="짜장나라 안내 캐릭터" aria-expanded="false" role="button" tabindex="0" title="캐릭터 자세히 보기">
+    <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
+    <div class="detail-character__col">
+      <div class="detail-character__stage"></div>
+      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+    </div>
+  </aside>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
 </body>
 </html>

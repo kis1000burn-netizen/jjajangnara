@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="theme-color" content="#061827" />
+  <link rel="manifest" href="pos-manifest.webmanifest" />
+  <link rel="icon" href="assets/images/logo.png.png" type="image/png" />
+  <title>짜장나라 주문 진행판</title>
+  <style>
+    :root {
+      --bg:#061827; --panel:#0d2b42; --line:rgba(137,214,244,.24);
+      --text:#eefaff; --sub:#a9cada; --accent:#4fc5ef; --danger:#ff8c8c;
+    }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; background:linear-gradient(145deg,#04131f,#0a2a42); color:var(--text);
+      font-family:system-ui,-apple-system,"Noto Sans KR",sans-serif; }
+    button,input,textarea { font:inherit; }
+    header { position:sticky; top:0; z-index:20; display:flex; align-items:center; gap:.8rem; padding:.75rem 1rem;
+      background:rgba(4,22,36,.86); border-bottom:1px solid var(--line); backdrop-filter:blur(16px); }
+    h1 { margin:0; font-size:1.05rem; color:#b9ecff; }
+    .connection { margin-left:auto; font-size:.76rem; color:var(--sub); }
+    .connection.is-online { color:#81e6b7; }
+    .toolbar-btn { min-height:38px; padding:0 .8rem; border:1px solid var(--line); border-radius:.65rem;
+      background:rgba(30,83,112,.55); color:var(--text); font-weight:750; cursor:pointer; }
+    .board { display:grid; grid-template-columns:repeat(6,minmax(245px,1fr)); gap:.7rem; padding:.8rem; overflow-x:auto; }
+    .lane { min-height:calc(100vh - 78px); padding:.65rem; border:1px solid var(--line); border-radius:1rem;
+      background:rgba(12,42,64,.58); backdrop-filter:blur(10px); }
+    .lane-head { position:sticky; top:66px; z-index:5; display:flex; justify-content:space-between; padding:.35rem .25rem .7rem;
+      background:linear-gradient(#0c2a40 75%,transparent); font-weight:850; }
+    .count { min-width:1.55rem; text-align:center; border-radius:999px; background:rgba(79,197,239,.18); color:#a9e8ff; }
+    .orders { display:grid; gap:.65rem; }
+    .order-card { padding:.8rem; border:1px solid var(--line); border-radius:.85rem; background:linear-gradient(145deg,rgba(26,76,103,.88),rgba(8,35,54,.92));
+      box-shadow:0 12px 28px rgba(0,7,16,.25); }
+    .order-card.is-new { border-color:#54d99c; box-shadow:0 0 0 2px rgba(84,217,156,.12),0 12px 28px rgba(0,7,16,.25); }
+    .order-top { display:flex; justify-content:space-between; gap:.5rem; }
+    .order-number { font-weight:900; color:#b9ecff; }
+    .order-time { font-size:.72rem; color:var(--sub); }
+    .items { display:grid; gap:.4rem; margin:.7rem 0; padding:.6rem 0; border-block:1px dashed var(--line); }
+    .item-name { font-weight:800; }
+    .item-detail,.customer,.request { font-size:.75rem; line-height:1.5; color:var(--sub); }
+    .request { margin-top:.45rem; padding:.45rem; border-radius:.5rem; background:rgba(255,187,84,.1); color:#ffd79e; }
+    .total { margin-top:.55rem; text-align:right; font-weight:900; color:#9ce6ff; }
+    .card-actions { display:grid; grid-template-columns:1fr auto auto; gap:.4rem; margin-top:.65rem; }
+    .next-btn,.mini-btn { min-height:38px; border-radius:.6rem; cursor:pointer; font-weight:850; }
+    .next-btn { border:1px solid #70d8f7; background:linear-gradient(135deg,#268fbe,#65cfee); color:#041b29; }
+    .mini-btn { border:1px solid var(--line); background:rgba(6,29,47,.75); color:var(--text); padding:0 .65rem; }
+    .empty { padding:1.2rem .4rem; text-align:center; color:#739aae; font-size:.78rem; }
+    dialog { width:min(440px,calc(100% - 2rem)); border:1px solid var(--line); border-radius:1rem; padding:1.1rem;
+      color:var(--text); background:#0b2940; box-shadow:0 30px 90px rgba(0,0,0,.5); }
+    dialog::backdrop { background:rgba(0,10,20,.72); backdrop-filter:blur(8px); }
+    dialog h2 { margin:.1rem 0 .6rem; color:#b9ecff; }
+    dialog p { color:var(--sub); font-size:.82rem; line-height:1.6; }
+    dialog input,dialog textarea { width:100%; min-height:44px; margin:.6rem 0; padding:.6rem .7rem; border:1px solid var(--line);
+      border-radius:.65rem; background:#061c2d; color:var(--text); }
+    dialog textarea { min-height:82px; resize:vertical; }
+    .check-row { display:flex; align-items:center; gap:.55rem; color:var(--text); font-weight:750; }
+    .check-row input { width:20px; min-height:20px; margin:0; }
+    .dialog-actions { display:flex; justify-content:flex-end; gap:.5rem; }
+    @media(max-width:900px){ .board{grid-template-columns:repeat(6,minmax(82vw,1fr));} }
+  </style>
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
+</head>
+<body>
+  <header>
+    <h1>짜장나라 주문 진행판</h1>
+    <button class="toolbar-btn" id="refreshButton">새로고침</button>
+    <button class="toolbar-btn" id="installButton" hidden>앱 설치</button>
+    <button class="toolbar-btn" id="noticeButton">휴일 공지</button>
+    <button class="toolbar-btn" id="settingsButton">연결 설정</button>
+    <span class="connection" id="connection">연결 대기</span>
+  </header>
+  <main class="board" id="board"></main>
+
+  <dialog id="settingsDialog">
+    <form method="dialog" id="settingsForm">
+      <h2>포스 연결 설정</h2>
+      <p>Netlify 환경변수 <strong>POS_API_TOKEN</strong>과 동일한 토큰을 입력하세요. 이 값은 현재 포스 기기에만 저장됩니다.</p>
+      <input id="tokenInput" type="password" autocomplete="off" placeholder="POS API 토큰" required />
+      <div class="dialog-actions">
+        <button class="toolbar-btn" value="cancel">취소</button>
+        <button class="toolbar-btn" id="saveTokenButton" value="default">저장·연결</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="noticeDialog">
+    <form id="noticeForm">
+      <h2>휴일 안내 설정</h2>
+      <label class="check-row"><input id="holidayEnabled" type="checkbox" /> 홈페이지에 휴일로 안내</label>
+      <label>
+        <span>휴일 종료일(선택)</span>
+        <input id="holidayUntil" type="date" />
+      </label>
+      <label>
+        <span>홈페이지 안내 문구</span>
+        <textarea id="holidayMessage" maxlength="200">오늘은 휴무일입니다.</textarea>
+      </label>
+      <p>종료일이 지나면 휴일 안내가 자동 해제됩니다.</p>
+      <div class="dialog-actions">
+        <button type="button" class="toolbar-btn" id="noticeCancelButton">취소</button>
+        <button type="submit" class="toolbar-btn">공지 저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script>
+    (function () {
+      "use strict";
+      var API_URL = "/.netlify/functions/pos-orders";
+      var TOKEN_KEY = "jjajangnara-pos-token";
+      var STATUSES = [
+        { id:"new", label:"신규 주문", next:"accepted", nextLabel:"접수" },
+        { id:"accepted", label:"접수 완료", next:"cooking", nextLabel:"조리 시작" },
+        { id:"cooking", label:"조리 중", next:"ready", nextLabel:"조리 완료" },
+        { id:"ready", label:"배달 대기", next:"delivering", nextLabel:"배달 출발" },
+        { id:"delivering", label:"배달 중", next:"completed", nextLabel:"전달 완료" },
+        { id:"completed", label:"완료·취소", next:null, nextLabel:"" }
+      ];
+      var token = localStorage.getItem(TOKEN_KEY) || "";
+      var runtimeStatus = null;
+      var knownNewOrders = new Set();
+      var initialized = false;
+      var installPrompt = null;
+      var pollTimer = null;
+      var board = document.getElementById("board");
+      var connection = document.getElementById("connection");
+      var dialog = document.getElementById("settingsDialog");
+      var noticeDialog = document.getElementById("noticeDialog");
+      var tokenInput = document.getElementById("tokenInput");
+
+      function escapeHtml(value) {
+        return String(value ?? "").replace(/[&<>"']/g, function (char) {
+          return ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[char];
+        });
+      }
+      function won(value) { return Number(value || 0).toLocaleString("ko-KR") + "원"; }
+      function time(value) {
+        var date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "-" : date.toLocaleTimeString("ko-KR", { hour:"2-digit", minute:"2-digit" });
+      }
+      function shortId(value) { return String(value || "").slice(-8).toUpperCase(); }
+      function laneStatus(order) { return order.status === "canceled" ? "completed" : order.status; }
+      function headers() { return { Authorization:"Bearer " + token, "Content-Type":"application/json" }; }
+
+      function notifyNewOrder() {
+        try {
+          var audio = new (globalThis.AudioContext || globalThis.webkitAudioContext)();
+          var oscillator = audio.createOscillator();
+          var gain = audio.createGain();
+          oscillator.frequency.value = 880;
+          gain.gain.setValueAtTime(.18, audio.currentTime);
+          gain.gain.exponentialRampToValueAtTime(.001, audio.currentTime + .6);
+          oscillator.connect(gain).connect(audio.destination);
+          oscillator.start();
+          oscillator.stop(audio.currentTime + .6);
+        } catch (_) {}
+      }
+
+      function cardHtml(order, status) {
+        var items = (order.items || []).map(function (item) {
+          return '<div><div class="item-name">' + escapeHtml(item.name) + '</div>' +
+            '<div class="item-detail">' + escapeHtml(item.detail || "") + " · " + won(item.price) + '</div></div>';
+        }).join("");
+        var next = STATUSES.find(function (entry) { return entry.id === status; });
+        return '<article class="order-card ' + (status === "new" ? "is-new" : "") + '">' +
+          '<div class="order-top"><span class="order-number">#' + escapeHtml(shortId(order.orderId)) + '</span>' +
+          '<span class="order-time">' + escapeHtml(time(order.createdAt)) + '</span></div>' +
+          '<div class="items">' + items + '</div>' +
+          '<div class="customer">' + escapeHtml(order.phone) + '<br>' + escapeHtml(order.address) + '</div>' +
+          '<div class="request">요청: ' + escapeHtml(order.request || "없음") + '</div>' +
+          '<div class="total">' + won(order.total) + '</div>' +
+          '<div class="card-actions">' +
+            (next && next.next ? '<button class="next-btn" data-order="' + escapeHtml(order.orderId) + '" data-status="' + next.next + '">' + next.nextLabel + '</button>' : '<span></span>') +
+            '<button class="mini-btn" data-print="' + escapeHtml(order.orderId) + '">재출력</button>' +
+            (status !== "completed" ? '<button class="mini-btn" data-cancel="' + escapeHtml(order.orderId) + '">취소</button>' : "") +
+          '</div>' +
+        '</article>';
+      }
+
+      function render(orders) {
+        board.innerHTML = STATUSES.map(function (status) {
+          var list = orders.filter(function (order) { return laneStatus(order) === status.id; });
+          return '<section class="lane"><div class="lane-head"><span>' + status.label + '</span><span class="count">' + list.length + '</span></div>' +
+            '<div class="orders">' + (list.length ? list.map(function (order) { return cardHtml(order, status.id); }).join("") : '<div class="empty">주문 없음</div>') + '</div></section>';
+        }).join("");
+      }
+
+      async function loadOrders() {
+        if (!token) {
+          if (!dialog.open) dialog.showModal();
+          return;
+        }
+        try {
+          var response = await fetch(API_URL, { headers:headers(), cache:"no-store" });
+          if (response.status === 401) {
+            token = "";
+            localStorage.removeItem(TOKEN_KEY);
+            throw new Error("인증 토큰을 다시 입력해 주세요.");
+          }
+          var result = await response.json();
+          if (!response.ok) throw new Error(result.message || "주문을 불러오지 못했습니다.");
+          var orders = result.orders || [];
+          runtimeStatus = result.runtime || runtimeStatus;
+          var newIds = orders.filter(function (order) { return order.status === "new"; }).map(function (order) { return order.orderId; });
+          if (initialized && newIds.some(function (id) { return !knownNewOrders.has(id); })) notifyNewOrder();
+          knownNewOrders = new Set(newIds);
+          initialized = true;
+          render(orders);
+          connection.textContent = "온라인 · " + time(result.serverTime);
+          connection.classList.add("is-online");
+        } catch (error) {
+          connection.textContent = error.message || "연결 오류";
+          connection.classList.remove("is-online");
+          if (!token && !dialog.open) dialog.showModal();
+        }
+      }
+
+      async function patchOrder(orderId, changes) {
+        var response = await fetch(API_URL, {
+          method:"PATCH", headers:headers(), body:JSON.stringify({ orderId:orderId, ...changes })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message || "주문 상태 변경 실패");
+        await loadOrders();
+      }
+
+      async function saveBusinessStatus(event) {
+        event.preventDefault();
+        if (!token) {
+          alert("먼저 POS 연결 토큰을 설정해 주세요.");
+          return;
+        }
+        var response = await fetch(API_URL, {
+          method:"PATCH",
+          headers:headers(),
+          body:JSON.stringify({
+            action:"business-status",
+            holiday:document.getElementById("holidayEnabled").checked,
+            holidayUntil:document.getElementById("holidayUntil").value || null,
+            holidayMessage:document.getElementById("holidayMessage").value.trim()
+          })
+        });
+        var result = await response.json();
+        if (!response.ok) throw new Error(result.message || "휴일 공지를 저장하지 못했습니다.");
+        runtimeStatus = result.runtime;
+        noticeDialog.close();
+        alert("홈페이지 휴일 안내를 저장했습니다.");
+      }
+
+      board.addEventListener("click", function (event) {
+        var statusButton = event.target.closest("[data-order][data-status]");
+        var printButton = event.target.closest("[data-print]");
+        var cancelButton = event.target.closest("[data-cancel]");
+        if (statusButton) {
+          patchOrder(statusButton.dataset.order, { status:statusButton.dataset.status }).catch(function (error) { alert(error.message); });
+        } else if (printButton) {
+          patchOrder(printButton.dataset.print, { printRequestedAt:new Date().toISOString() })
+            .then(function () { alert("카운터 프린터 브리지에 재출력을 요청했습니다."); })
+            .catch(function (error) { alert(error.message); });
+        } else if (cancelButton && confirm("이 주문을 취소 상태로 변경하시겠습니까?")) {
+          patchOrder(cancelButton.dataset.cancel, { status:"canceled" }).catch(function (error) { alert(error.message); });
+        }
+      });
+
+      document.getElementById("refreshButton").addEventListener("click", loadOrders);
+      document.getElementById("noticeButton").addEventListener("click", function () {
+        document.getElementById("holidayEnabled").checked = Boolean(runtimeStatus?.holiday);
+        document.getElementById("holidayUntil").value = runtimeStatus?.holidayUntil || "";
+        document.getElementById("holidayMessage").value = runtimeStatus?.holidayMessage || "오늘은 휴무일입니다.";
+        noticeDialog.showModal();
+      });
+      document.getElementById("noticeCancelButton").addEventListener("click", function () { noticeDialog.close(); });
+      document.getElementById("noticeForm").addEventListener("submit", function (event) {
+        saveBusinessStatus(event).catch(function (error) { alert(error.message); });
+      });
+      document.getElementById("settingsButton").addEventListener("click", function () {
+        tokenInput.value = token; dialog.showModal();
+      });
+      document.getElementById("settingsForm").addEventListener("submit", function (event) {
+        if (event.submitter?.value === "cancel") return;
+        event.preventDefault();
+        token = tokenInput.value.trim();
+        if (!token) return;
+        localStorage.setItem(TOKEN_KEY, token);
+        dialog.close();
+        loadOrders();
+      });
+
+      globalThis.addEventListener("beforeinstallprompt", function (event) {
+        event.preventDefault(); installPrompt = event;
+        document.getElementById("installButton").hidden = false;
+      });
+      document.getElementById("installButton").addEventListener("click", async function (event) {
+        if (!installPrompt) return;
+        await installPrompt.prompt();
+        installPrompt = null;
+        event.currentTarget.hidden = true;
+      });
+
+      if ("serviceWorker" in navigator) navigator.serviceWorker.register("/pos-sw.js");
+      loadOrders();
+      pollTimer = globalThis.setInterval(loadOrders, 4000);
+      globalThis.addEventListener("beforeunload", function () { globalThis.clearInterval(pollTimer); });
+    })();
+  </script>
+</body>
+</html>
