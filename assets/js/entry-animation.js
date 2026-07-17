@@ -80,7 +80,7 @@
       "animation:jj-domain-pulse 2.8s ease-in-out infinite;",
       "}",
       "@media (max-width:640px){",
-      ".jj-domain-anim{font-size:clamp(.82rem,3.2vw,.95rem);max-width:min(90vw,16.5rem);}",
+      ".jj-domain-anim{font-size:clamp(.72rem,3vw,.88rem);max-width:min(88vw,15rem);letter-spacing:.02em;}",
       "}"
     ].join("");
     document.head.appendChild(style);
@@ -136,25 +136,54 @@
     tg.style.transform = "translateY(0)";
   }
 
+  function getViewportWidth() {
+    try {
+      if (globalThis.visualViewport && globalThis.visualViewport.width) {
+        return globalThis.visualViewport.width;
+      }
+      return globalThis.innerWidth || document.documentElement.clientWidth || 960;
+    } catch (_) {
+      return 960;
+    }
+  }
+
+  function resolveLetterWidth(vw, letterCount, optionsWidth) {
+    if (typeof optionsWidth === "number" && optionsWidth > 0) {
+      return optionsWidth;
+    }
+    // 행 좌우 패딩·오버레이 패딩·글자 간격까지 반영해 한 줄에 들어가게 맞춤
+    var sidePad = 24 + 16; // overlay + row padding
+    var gap = vw <= 400 ? 3 : vw <= 640 ? 4 : 5;
+    var gapsTotal = Math.max(0, letterCount - 1) * gap;
+    var fit = Math.floor((vw - sidePad - gapsTotal) / Math.max(letterCount, 1));
+    var preferred =
+      vw <= 320 ? 26 :
+      vw <= 360 ? 28 :
+      vw <= 390 ? 30 :
+      vw <= 430 ? 32 :
+      vw <= 480 ? 34 :
+      vw <= 640 ? 38 :
+      60;
+    return Math.max(22, Math.min(preferred, fit));
+  }
+
   function normalizeOptions(options) {
     options = options || {};
-    var vw = 960;
-    try {
-      vw = globalThis.innerWidth || document.documentElement.clientWidth || 960;
-    } catch (_) {}
-    var mobileLetter =
-      vw <= 360 ? 30 : vw <= 400 ? 34 : vw <= 480 ? 38 : vw <= 640 ? 44 : 60;
+    var letters = options.letters || JJAJANG_LETTERS;
+    var vw = getViewportWidth();
+    var mobileLetter = resolveLetterWidth(vw, letters.length, options.letterWidth);
     return {
       overlayId: options.overlayId || "jjajang-intro-ov",
       rowId: options.rowId || "jj-row",
       taglineId: options.taglineId || "jj-tagline",
-      letters: options.letters || JJAJANG_LETTERS,
+      letters: letters,
       cycleColors: options.cycleColors || JJAJANG_CYCLE_COLORS,
       taglineText: options.taglineText || "짜장나라 세종본점",
       domainText: options.domainText || "www.짜장나라.com",
       skipText: options.skipText || "탭하여 건너뛰기",
       backgroundColor: options.backgroundColor || "#111111",
-      letterWidth: options.letterWidth || mobileLetter,
+      letterWidth: mobileLetter,
+      letterGap: vw <= 400 ? 3 : vw <= 640 ? 4 : 5,
       animMs: options.animMs || 680,
       gapMs: options.gapMs || 255,
       fadeMs: options.fadeMs || 460,
@@ -179,19 +208,21 @@
     row.id = cfg.rowId;
     row.style.cssText =
       "display:flex;align-items:center;justify-content:center;gap:" +
-      (cfg.letterWidth <= 40 ? "3px" : "5px") +
-      ";min-height:" + Math.round(cfg.letterWidth * 1.1) + "px;" +
-      "flex-wrap:nowrap;max-width:min(96vw,560px);padding:0 8px;overflow:hidden;";
+      cfg.letterGap +
+      "px;min-height:" + Math.round(cfg.letterWidth * 1.1) + "px;" +
+      "flex-wrap:nowrap;width:100%;max-width:min(96vw,560px);padding:0 8px;" +
+      "box-sizing:border-box;overflow:visible;";
 
     var tagline = document.createElement("div");
     tagline.id = cfg.taglineId;
     tagline.innerHTML =
       '<span style="white-space:nowrap">짜장나라</span> <span style="white-space:nowrap">세종본점</span>';
     tagline.style.cssText =
-      "font-size:clamp(.78rem,3.4vw,.92rem);font-weight:700;letter-spacing:.06em;color:rgba(217,164,65,.88);" +
+      "font-size:clamp(.72rem,3.1vw,.9rem);font-weight:700;letter-spacing:.04em;color:rgba(217,164,65,.88);" +
       "opacity:0;transition:opacity .5s ease,transform .5s ease;transform:translateY(10px);" +
-      "text-align:center;max-width:min(92vw,20rem);word-break:keep-all;line-height:1.35;" +
-      "display:flex;flex-wrap:wrap;justify-content:center;gap:.2em .45em;padding:0 .4rem;";
+      "text-align:center;max-width:min(92vw,18rem);word-break:keep-all;line-height:1.35;" +
+      "display:flex;flex-wrap:wrap;justify-content:center;gap:.15em .35em;padding:0 .35rem;" +
+      "box-sizing:border-box;";
 
     var domain = buildDomainNode(cfg.taglineId + "-domain", cfg.domainText);
 
@@ -218,14 +249,19 @@
       var sp = document.createElement("span");
       sp.id = cfg.rowId + "-ltr-" + i;
       sp.textContent = l.ch;
-      var w = l.dot ? String(Math.max(18, Math.round(cfg.letterWidth * 0.48))) : String(cfg.letterWidth);
-      var fontSize = l.dot ? "1.35" : cfg.letterWidth <= 36 ? "1.05" : cfg.letterWidth <= 44 ? "1.25" : "1.55";
+      var w = l.dot
+        ? Math.max(16, Math.round(cfg.letterWidth * 0.48))
+        : cfg.letterWidth;
+      // rem 대신 px — 모바일 시스템 글자 확대 시에도 칸 밖으로 안 잘리게
+      var fontPx = l.dot
+        ? Math.max(14, Math.round(w * 0.72))
+        : Math.max(13, Math.round(cfg.letterWidth * 0.58));
       sp.style.cssText =
         "display:inline-flex;align-items:center;justify-content:center;" +
-        "width:" + w + "px;height:" + w + "px;flex:0 0 auto;" +
-        "font-size:" + fontSize + "rem;font-weight:900;" +
+        "width:" + w + "px;height:" + w + "px;flex:0 0 " + w + "px;" +
+        "font-size:" + fontPx + "px;font-weight:900;line-height:1;" +
         "font-family:var(--jj-font-sans,Pretendard,'Noto Sans KR',sans-serif);" +
-        "border-radius:50%;border:2px solid transparent;" +
+        "border-radius:50%;border:2px solid transparent;box-sizing:border-box;" +
         "color:transparent;background:" + l.bg + ";position:relative;" +
         "opacity:0;transform:translateX(80px) scale(0) rotate(220deg);";
       row.appendChild(sp);
