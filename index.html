@@ -659,10 +659,33 @@
 
     }
 
-    .hero-media:not([hidden]) + .hero {
+    .hero-media:not([hidden]):not(.is-store-video-warming) + .hero {
 
       padding-top: 0;
 
+    }
+
+    /* 진입 허브 동안 매장 영상 미리 버퍼링 (레이아웃/화면에는 영향 없음) */
+    .hero-media.is-store-video-warming {
+      position: fixed !important;
+      left: -9999px !important;
+      top: 0 !important;
+      width: 2px !important;
+      height: 2px !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      overflow: hidden !important;
+      z-index: -1 !important;
+    }
+
+    .hero-media.is-store-video-warming video {
+      min-height: 0 !important;
+      max-height: none !important;
+      width: 2px !important;
+      height: 2px !important;
+      aspect-ratio: auto !important;
     }
 
     html {
@@ -4252,7 +4275,7 @@
   <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260718req4"></script>
   <script src="assets/js/dist/entry-animation.min.js?v=20260717ent1"></script>
   <script src="assets/js/dist/detail-character-preload.min.js?v=20260717hub"></script>
-  <script src="assets/js/dist/entry-hub.min.js?v=20260718req4"></script>
+  <script src="assets/js/dist/entry-hub.min.js?v=20260718vid1"></script>
 
   <script>
 
@@ -5337,13 +5360,13 @@
       statusTitle.textContent = "영업 종료";
       statusDetail.textContent = `${formatBusinessTime(openMinutes)}에 다시 영업을 시작합니다`;
     }
-    // 비디오는 '매장 둘러보기'에서만 재생 (자동 재생 비활성)
+    // 비디오는 '매장 둘러보기'에서만 표시 재생. 버퍼링은 진입 허브에서 미리 시작.
 
     const heroVideo = document.getElementById("heroVideo");
 
     if (heroVideo) {
       heroVideo.removeAttribute("autoplay");
-      heroVideo.setAttribute("preload", "none");
+      heroVideo.muted = true;
     }
 
 

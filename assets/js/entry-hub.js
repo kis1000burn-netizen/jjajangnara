@@ -13,6 +13,8 @@
   var MENU_OPEN_DELAY = 900;
   var guidanceUtterance = null;
   var lastHeroVoiceIndex = -1;
+  var storeVideoWarmStarted = false;
+  var STORE_VIDEO_SRC = "assets/video/store-timelapse.mp4.mp4";
 
   // 여성 안내 음성 5종 프로필 (시스템 한국어 여성 음성 + pitch/rate로 구분)
   var HERO_FEMALE_VOICE_PROFILES = [
@@ -252,6 +254,84 @@
     }
   }
 
+  function getStoreVideoElements() {
+    return {
+      media: document.getElementById("home"),
+      video: document.getElementById("heroVideo")
+    };
+  }
+
+  function getStoreVideoSrc(video) {
+    if (!video) return STORE_VIDEO_SRC;
+    var source = video.querySelector("source");
+    return (source && source.getAttribute("src")) || STORE_VIDEO_SRC;
+  }
+
+  /** 진입 허브 표시 중 매장 영상을 비가시 상태로 미리 버퍼링 */
+  function warmStoreVideo() {
+    var parts = getStoreVideoElements();
+    var media = parts.media;
+    var video = parts.video;
+    if (!video) return;
+
+    video.muted = true;
+    video.setAttribute("playsinline", "");
+    video.setAttribute("preload", "auto");
+    video.removeAttribute("autoplay");
+
+    // HTTP 캐시 + 브라우저 preload 힌트
+    var src = getStoreVideoSrc(video);
+    if (!document.querySelector('link[data-store-video-preload="1"]')) {
+      try {
+        var link = document.createElement("link");
+        link.rel = "preload";
+        link.as = "video";
+        link.href = src;
+        link.setAttribute("data-store-video-preload", "1");
+        document.head.appendChild(link);
+      } catch (_) {}
+    }
+    if (typeof fetch === "function" && !storeVideoWarmStarted) {
+      try {
+        fetch(src, { credentials: "same-origin", cache: "force-cache", mode: "no-cors" }).catch(function () {});
+      } catch (_) {}
+    }
+
+    // display:none(hidden)이면 버퍼링이 지연되므로 오프스크린 워밍 클래스로 전환
+    if (media && !isBrowseVideoEnabled()) {
+      media.hidden = false;
+      media.classList.add("is-store-video-warming");
+      media.classList.remove("is-store-browse-active");
+      media.setAttribute("aria-hidden", "true");
+    }
+
+    if (storeVideoWarmStarted && video.readyState >= 2) {
+      return;
+    }
+    storeVideoWarmStarted = true;
+
+    var prime = function () {
+      var playPromise = video.play();
+      if (!playPromise || typeof playPromise.then !== "function") return;
+      playPromise.then(function () {
+        try {
+          video.pause();
+          video.currentTime = 0;
+        } catch (_) {}
+      }).catch(function () {});
+    };
+
+    if (video.readyState >= 3) {
+      prime();
+      return;
+    }
+
+    video.addEventListener("canplay", prime, { once: true });
+    try {
+      video.load();
+    } catch (_) {}
+  }
+
   function buildDomainHtml() {
     var html = "";
     for (var i = 0; i < DOMAIN_TEXT.length; i++) {
@@ -372,24 +452,32 @@
 
   function revealStoreVideo() {
     setBrowseVideoEnabled(true);
-    var media = document.getElementById("home");
-    var video = document.getElementById("heroVideo");
+    var parts = getStoreVideoElements();
+    var media = parts.media;
+    var video = parts.video;
     if (media) {
       media.hidden = false;
+      media.classList.remove("is-store-video-warming");
       media.classList.add("is-store-browse-active");
+      media.removeAttribute("aria-hidden");
     }
-    if (video) {
-      video.setAttribute("preload", "auto");
-      var play = function () {
-        video.play().catch(function (error) {
-          console.log("매장 영상 재생 실패:", error);
-        });
-      };
-      if (video.readyState >= 2) play();
-      else {
-        video.addEventListener("canplay", play, { once: true });
-        video.load();
-      }
+    if (!video) return;
+
+    video.muted = true;
+    video.setAttribute("preload", "auto");
+    var play = function () {
+      video.play().catch(function (error) {
+        console.log("매장 영상 재생 실패:", error);
+      });
+    };
+    // 미리 버퍼된 경우 즉시 재생 (load() 재호출하면 버퍼가 초기화됨)
+    if (video.readyState >= 2) {
+      play();
+      return;
+    }
+    video.addEventListener("canplay", play, { once: true });
+    if (!storeVideoWarmStarted) {
+      warmStoreVideo();
     }
   }
 
@@ -556,6 +644,8 @@
       globalThis.HeroCharacter.setActive("entryCharacterStage", characterActive);
     }
     document.body.classList.add("is-entry-hub-open");
+    // 허브가 열리는 즉시 매장 영상 버퍼링 시작 → 메뉴 클릭 시 즉시 재생
+    warmStoreVideo();
     requestAnimationFrame(function () {
       root.classList.add("is-open");
       mountEntryCharacter();
@@ -606,24 +696,37 @@
   }
 
   function initStoreVideoGate() {
-    var media = document.getElementById("home");
-    var video = document.getElementById("heroVideo");
+    var parts = getStoreVideoElements();
+    var media = parts.media;
+    var video = parts.video;
     if (!media) return;
 
     if (isBrowseVideoEnabled()) {
       media.hidden = false;
+      media.classList.remove("is-store-video-warming");
       media.classList.add("is-store-browse-active");
+      media.removeAttribute("aria-hidden");
       return;
     }
 
-    media.hidden = true;
     media.classList.remove("is-store-browse-active");
     if (video) {
       try {
         video.pause();
       } catch (_) {}
       video.removeAttribute("autoplay");
-      video.setAttribute("preload", "none");
+    }
+
+    // 진입 허브가 곧 열리면 미리 워밍, 아니면 숨김 유지
+    if (shouldOpenOnLoad()) {
+      warmStoreVideo();
+    } else {
+      media.hidden = true;
+      media.classList.remove("is-store-video-warming");
+      media.setAttribute("aria-hidden", "true");
+      if (video && !storeVideoWarmStarted) {
+        video.setAttribute("preload", "none");
+      }
     }
   }
 
@@ -634,6 +737,7 @@
     isDismissed: isDismissed,
     activateCharacter: activateCharacter,
     initStoreVideoGate: initStoreVideoGate,
+    warmStoreVideo: warmStoreVideo,
     revealStoreVideo: revealStoreVideo,
     reopenHomeEntry: reopenHomeEntry,
     clearHubDismissal: clearHubDismissal,
