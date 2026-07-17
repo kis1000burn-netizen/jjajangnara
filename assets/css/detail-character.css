@@ -59,8 +59,8 @@ html.entry-pending #jjajang-detail-character {
 
 #jjajang-detail-character .detail-character__stage {
   position: relative;
-  width: 132px;
-  height: 165px;
+  width: 172px;
+  height: 215px;
   flex: 0 0 auto;
   overflow: hidden;
   background: transparent;
@@ -150,7 +150,7 @@ html.entry-pending #jjajang-detail-character {
   }
 
   #jjajang-detail-character .detail-character__stage {
-    width: 100px;
-    height: 125px;
+    width: 130px;
+    height: 163px;
   }
 }

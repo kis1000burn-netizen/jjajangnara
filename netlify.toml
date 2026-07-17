@@ -40,10 +40,23 @@
     Cache-Control = "no-store"
 
 [[headers]]
+  for = "/pos-install.html"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+
+[[headers]]
   for = "/pos-sw.js"
   [headers.values]
     Cache-Control = "no-cache"
     Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/downloads/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "public, max-age=3600"
+    Content-Disposition = "attachment"
 
 # 리다이렉트 설정 (필요시)
 # [[redirects]]

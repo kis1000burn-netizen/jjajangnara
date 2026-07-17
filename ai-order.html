@@ -309,6 +309,26 @@
       border-radius: 0.9rem;
       background: var(--panel-soft);
     }
+    .set-card-image {
+      width: 100%;
+      aspect-ratio: 4 / 3;
+      border-radius: 0.7rem;
+      overflow: hidden;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .set-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .set-ai-note {
+      margin: 0;
+      font-size: 0.7rem;
+      line-height: 1.4;
+      color: var(--sub);
+      word-break: keep-all;
+    }
     .set-name { font-weight: 850; color: var(--gold-soft); }
     .set-price { font-size: 1.05rem; font-weight: 850; }
     .set-desc { flex: 1; color: var(--sub); font-size: 0.76rem; line-height: 1.55; }
@@ -343,9 +363,9 @@
       .menu-option { justify-content: space-between; }
     }
   </style>
-  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717m130" />
 </head>
 <body>
   <main class="page">
@@ -405,6 +425,7 @@
         <div class="menu-grid" id="menuGrid"></div>
         <div class="set-section">
           <h2>세트 메뉴</h2>
+          <p class="notice">※ 세트 안내 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
           <div class="set-grid" id="setGrid"></div>
         </div>
       </div>
@@ -427,8 +448,8 @@
     </section>
   </main>
 
-  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260717af"></script>
-  <script src="assets/js/dist/ai-order-config.min.js?v=20260717af"></script>
+  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260717hub"></script>
+  <script src="assets/js/dist/ai-order-config.min.js?v=20260717hub"></script>
   <script>
     (function () {
       "use strict";
@@ -524,9 +545,17 @@
 
       function renderSetMenus() {
         var modeQuery = currentOrderMode === "mixed" ? "&mode=mixed" : "&mode=set";
+        var setImages = {
+          solo: "assets/images/single_set.png",
+          couple: "assets/images/couple_set.png",
+          family: "assets/images/family_set.png"
+        };
         setGrid.innerHTML = SET_MENUS.map(function (setMenu) {
+          var imageUrl = setImages[setMenu.id] || "assets/images/single_set.png";
           return (
             '<article class="set-card">' +
+              '<div class="set-card-image"><img src="' + imageUrl + '" alt="' + setMenu.name + '" loading="lazy" /></div>' +
+              '<p class="set-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>' +
               '<div class="set-name">' + setMenu.name + '</div>' +
               '<div class="set-price">' + won(setMenu.price) + '</div>' +
               '<div class="set-desc">' + setMenu.desc + '</div>' +
@@ -930,9 +959,9 @@
     <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
     <div class="detail-character__col">
       <div class="detail-character__stage"></div>
-      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+      <a class="detail-character__home" href="index.html?hub=1">홈복귀</a>
     </div>
   </aside>
-  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717hub"></script>
 </body>
 </html>

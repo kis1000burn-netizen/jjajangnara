@@ -2,7 +2,10 @@ const { connectLambda, getStore } = require("@netlify/blobs");
 
 const STORE_NAME = "jjajangnara-pos-orders";
 const ORDER_PREFIX = "orders/";
+const PENDING_PREFIX = "pending/";
 const RUNTIME_KEY = "system/store-runtime";
+const DEFAULT_OPEN_MINUTES = 10 * 60;
+const DEFAULT_CLOSE_MINUTES = 20 * 60;
 const ALLOWED_STATUSES = new Set([
   "new",
   "accepted",
@@ -20,6 +23,57 @@ function getOrderStore(event) {
 
 function orderKey(orderId) {
   return `${ORDER_PREFIX}${String(orderId).replace(/[^a-zA-Z0-9_-]/g, "")}`;
+}
+
+function pendingKey(orderId) {
+  return `${PENDING_PREFIX}${String(orderId).replace(/[^a-zA-Z0-9_-]/g, "")}`;
+}
+
+function sanitizePendingOrder(orderId, order) {
+  if (!orderId || !order || !Array.isArray(order.cart) || order.cart.length === 0) {
+    throw new Error("주문 메뉴 정보가 없습니다.");
+  }
+  if (!order.address || !order.phone) {
+    throw new Error("배달 주소와 연락처가 필요합니다.");
+  }
+  if (!(Number(order.total) > 0)) {
+    throw new Error("결제 금액이 올바르지 않습니다.");
+  }
+  return {
+    orderId: String(orderId),
+    cart: order.cart.map((item) => ({
+      type: String(item.type || "single"),
+      id: String(item.id || ""),
+      name: String(item.name || "메뉴"),
+      detail: String(item.detail || ""),
+      price: Number(item.price) || 0,
+    })),
+    total: Number(order.total),
+    utensils: String(order.utensils || "O"),
+    address: String(order.address).slice(0, 300),
+    phone: String(order.phone).slice(0, 50),
+    request: String(order.request || "없음").slice(0, 500),
+    date: order.date || new Date().toISOString(),
+    orderName: String(order.orderName || "짜장나라 주문").slice(0, 100),
+    savedAt: new Date().toISOString(),
+  };
+}
+
+async function savePendingOrder(event, orderId, order) {
+  const store = getOrderStore(event);
+  const record = sanitizePendingOrder(orderId, order);
+  await store.setJSON(pendingKey(orderId), record);
+  return record;
+}
+
+async function getPendingOrder(event, orderId) {
+  const store = getOrderStore(event);
+  return store.get(pendingKey(orderId), { type: "json" });
+}
+
+async function deletePendingOrder(event, orderId) {
+  const store = getOrderStore(event);
+  await store.delete(pendingKey(orderId));
 }
 
 function assertOrderData(order, orderId, amount) {
@@ -109,12 +163,22 @@ async function updateOrder(event, orderId, changes) {
 async function getRuntimeStatus(event) {
   const store = getOrderStore(event);
   const saved = await store.get(RUNTIME_KEY, { type: "json" });
+  const openMinutes = Number.isFinite(Number(saved?.openMinutes))
+    ? Number(saved.openMinutes)
+    : DEFAULT_OPEN_MINUTES;
+  const closeMinutes = Number.isFinite(Number(saved?.closeMinutes))
+    ? Number(saved.closeMinutes)
+    : DEFAULT_CLOSE_MINUTES;
   return {
     heartbeatAt: saved?.heartbeatAt || null,
     stationName: saved?.stationName || "counter-pos",
     holiday: Boolean(saved?.holiday),
     holidayMessage: saved?.holidayMessage || "오늘은 휴무일입니다.",
     holidayUntil: saved?.holidayUntil || null,
+    forceClosed: Boolean(saved?.forceClosed),
+    forceOpen: Boolean(saved?.forceOpen),
+    openMinutes,
+    closeMinutes,
     updatedAt: saved?.updatedAt || null,
   };
 }
@@ -135,16 +199,29 @@ async function updateRuntimeStatus(event, changes) {
   if (Object.prototype.hasOwnProperty.call(changes, "holidayUntil")) {
     next.holidayUntil = changes.holidayUntil ? String(changes.holidayUntil).slice(0, 10) : null;
   }
+  if (typeof changes.forceClosed === "boolean") next.forceClosed = changes.forceClosed;
+  if (typeof changes.forceOpen === "boolean") next.forceOpen = changes.forceOpen;
+  if (Number.isFinite(Number(changes.openMinutes))) {
+    next.openMinutes = Math.max(0, Math.min(24 * 60 - 1, Number(changes.openMinutes)));
+  }
+  if (Number.isFinite(Number(changes.closeMinutes))) {
+    next.closeMinutes = Math.max(1, Math.min(24 * 60, Number(changes.closeMinutes)));
+  }
   await store.setJSON(RUNTIME_KEY, next);
   return next;
 }
 
 module.exports = {
   ALLOWED_STATUSES,
+  DEFAULT_CLOSE_MINUTES,
+  DEFAULT_OPEN_MINUTES,
   assertOrderData,
+  deletePendingOrder,
+  getPendingOrder,
   getRuntimeStatus,
   listOrders,
   savePaidOrder,
+  savePendingOrder,
   updateOrder,
   updateRuntimeStatus,
 };

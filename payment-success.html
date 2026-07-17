@@ -87,9 +87,9 @@
       font-weight: 700;
     }
   </style>
-  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717m130" />
 </head>
 <body>
   <main class="card">
@@ -149,6 +149,26 @@
       }
     }
 
+    async function loadPendingOrder(orderId) {
+      const localRaw = localStorage.getItem(`${pendingOrderStoragePrefix}${orderId}`);
+      if (localRaw) {
+        try {
+          return JSON.parse(localRaw);
+        } catch (error) {
+          console.warn("local pending parse failed:", error);
+        }
+      }
+
+      const response = await fetch(`/.netlify/functions/pending-order?orderId=${encodeURIComponent(orderId)}`, {
+        cache: "no-store",
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok || !result.order) {
+        throw new Error("주문 정보가 만료되었거나 확인되지 않습니다. 매장으로 전화 문의해 주세요. 044-589-3888");
+      }
+      return result.order;
+    }
+
     async function confirmPayment(paymentKey, orderId, amount, orderData) {
       const response = await fetch("/.netlify/functions/toss-confirm", {
         method: "POST",
@@ -185,22 +205,23 @@
         throw new Error("결제 완료 정보가 부족합니다. 주문 페이지에서 다시 시도해 주세요.");
       }
 
-      const storedOrder = localStorage.getItem(`${pendingOrderStoragePrefix}${orderId}`);
-      if (!storedOrder) {
-        throw new Error("주문 정보가 만료되었거나 확인되지 않습니다. 매장으로 전화 문의해 주세요. 044-589-3888");
-      }
-
-      const orderData = JSON.parse(storedOrder);
+      const orderData = await loadPendingOrder(orderId);
       const alreadySubmitted = localStorage.getItem(`${submittedOrderStoragePrefix}${orderId}`) === "done";
       const paymentData = await confirmPayment(paymentKey, orderId, amount, orderData);
 
+      let formWarning = "";
       if (!alreadySubmitted) {
-        await submitOrderForm(orderData, paymentData);
-        localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
+        try {
+          await submitOrderForm(orderData, paymentData);
+          localStorage.setItem(`${submittedOrderStoragePrefix}${orderId}`, "done");
+        } catch (formError) {
+          console.warn("Netlify Forms submit failed:", formError);
+          formWarning = " (주문서 백업 저장은 재시도가 필요할 수 있습니다. 포스 접수는 완료되었습니다.)";
+        }
       }
 
       localStorage.removeItem(`${pendingOrderStoragePrefix}${orderId}`);
-      setStatus("결제 승인과 매장 포스 주문 접수가 완료되었습니다.");
+      setStatus(`결제 승인과 매장 포스 주문 접수가 완료되었습니다.${formWarning}`);
       renderSummary(orderData, paymentData);
     } catch (error) {
       console.error(error);
@@ -211,9 +232,9 @@
     <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
     <div class="detail-character__col">
       <div class="detail-character__stage"></div>
-      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+      <a class="detail-character__home" href="index.html?hub=1">홈복귀</a>
     </div>
   </aside>
-  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717hub"></script>
 </body>
 </html>

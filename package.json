@@ -4,7 +4,7 @@
   "description": "짜장나라 주문·포스 연동 Netlify 사이트",
   "private": true,
   "scripts": {
-    "test": "node --check netlify/functions/_orders.js && node --check netlify/functions/toss-confirm.js && node --check netlify/functions/pos-orders.js && node --check netlify/functions/store-status.js && node --check pos-sw.js",
+    "test": "node --check netlify/functions/_orders.js && node --check netlify/functions/toss-confirm.js && node --check netlify/functions/pos-orders.js && node --check netlify/functions/store-status.js && node --check netlify/functions/pending-order.js && node --check pos-sw.js",
     "build": "node scripts/build-assets.mjs",
     "minify": "node scripts/build-assets.mjs"
   },

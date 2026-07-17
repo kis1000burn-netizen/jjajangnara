@@ -9,9 +9,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <script>
     (function () {
+      var forceHub = false;
+      var forceEntry = false;
+      try {
+        var params = new URLSearchParams(globalThis.location.search);
+        forceHub = params.get("hub") === "1";
+        forceEntry = params.get("entry") === "1";
+        if (forceHub) {
+          // PC·모바일 공통: 홈복귀는 진입 글자애니 없이 허브만
+          globalThis.sessionStorage.removeItem("jjajangnara-hub-dismissed");
+          globalThis.sessionStorage.setItem("jjajangnara-intro-seen", "1");
+        }
+      } catch (_) {}
       var shouldShowEntry = true;
       try {
-        shouldShowEntry = globalThis.sessionStorage.getItem("jjajangnara-hub-dismissed") !== "1";
+        shouldShowEntry =
+          forceHub ||
+          forceEntry ||
+          globalThis.sessionStorage.getItem("jjajangnara-hub-dismissed") !== "1";
       } catch (_) {}
       if (!shouldShowEntry) return;
       document.documentElement.classList.add("entry-pending");
@@ -74,7 +89,7 @@
     }
   </script>
   <!-- 진입 애니와 병렬로 FBX preload 시작 -->
-  <script type="module" src="assets/js/dist/hero-character.min.js?v=20260717af"></script>
+  <script type="module" src="assets/js/dist/hero-character.min.js?v=20260717hub"></script>
 
   <!-- JSON-LD 구조화 데이터 -->
   <script type="application/ld+json">
@@ -1273,6 +1288,128 @@
 
 
 
+    .business-status-pos-panel {
+
+      margin-top: 0.15rem;
+
+      padding: 0.85rem 0.9rem;
+
+      border: 1px solid rgba(137, 214, 244, 0.22);
+
+      border-radius: 0.95rem;
+
+      background: rgba(8, 34, 54, 0.45);
+
+      display: flex;
+
+      flex-direction: column;
+
+      gap: 0.55rem;
+
+    }
+
+
+
+    .business-status-pos-panel .business-status-editor-title {
+
+      font-size: 0.95rem;
+
+    }
+
+
+
+    .business-status-pos-actions {
+
+      display: flex;
+
+      flex-wrap: wrap;
+
+      gap: 0.5rem;
+
+    }
+
+
+
+    .business-status-pos-actions a.business-status-editor-btn {
+
+      text-decoration: none;
+
+      display: inline-flex;
+
+      align-items: center;
+
+      justify-content: center;
+
+    }
+
+
+
+    .business-status-editor-btn--accent {
+
+      border-color: rgba(112, 216, 247, 0.55);
+
+      background: linear-gradient(135deg, rgba(38, 143, 190, 0.9), rgba(101, 207, 238, 0.85));
+
+      color: #041b29;
+
+      font-weight: 800;
+
+    }
+
+
+
+    .business-status-editor-btn--gold {
+
+      border-color: rgba(224, 180, 90, 0.55);
+
+      background: linear-gradient(135deg, rgba(184, 134, 42, 0.92), rgba(217, 164, 65, 0.88));
+
+      color: #1a1205;
+
+      font-weight: 800;
+
+    }
+
+
+
+    .business-status-pos-steps {
+
+      margin: 0;
+
+      padding-left: 1.15rem;
+
+      display: grid;
+
+      gap: 0.3rem;
+
+      font-size: 0.74rem;
+
+      line-height: 1.5;
+
+      color: var(--text-sub);
+
+      word-break: keep-all;
+
+    }
+
+
+
+    .business-status-pos-steps code {
+
+      padding: 0.05rem 0.3rem;
+
+      border-radius: 0.3rem;
+
+      background: rgba(0, 0, 0, 0.28);
+
+      color: #9ce6ff;
+
+      font-size: 0.92em;
+
+    }
+
+
+
     @keyframes statusPulse {
 
       0%,
@@ -1581,6 +1718,22 @@
       user-select: none;
 
       pointer-events: auto;
+
+    }
+
+    .menu-ai-note {
+
+      margin: -0.25rem 0 0.15rem;
+
+      font-size: 0.72rem;
+
+      line-height: 1.4;
+
+      color: var(--text-sub, #b7d4e4);
+
+      opacity: 0.88;
+
+      word-break: keep-all;
 
     }
 
@@ -2882,6 +3035,53 @@
 
 
 
+    .footer-admin-trigger {
+
+      appearance: none;
+
+      margin: 0;
+
+      padding: 0;
+
+      border: 0;
+
+      background: transparent;
+
+      color: inherit;
+
+      font: inherit;
+
+      font-size: inherit;
+
+      line-height: inherit;
+
+      white-space: nowrap;
+
+      cursor: pointer;
+
+      text-align: left;
+
+      -webkit-tap-highlight-color: transparent;
+
+    }
+
+
+
+    .footer-admin-trigger:hover,
+    .footer-admin-trigger:focus-visible {
+
+      color: var(--text-main, #e7e9ee);
+
+      text-decoration: underline;
+
+      text-underline-offset: 3px;
+
+      outline: none;
+
+    }
+
+
+
     .footer-keywords {
 
       margin-top: 10px;
@@ -2908,9 +3108,9 @@
 
   </style>
 
-  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717m130" />
 </head>
 
 <body>
@@ -2919,7 +3119,7 @@
   <header>
     <div class="nav-inner">
 
-      <a href="index.html?entry=1" class="brand" id="headerBrandHome" aria-label="첫 화면으로 이동">
+      <a href="index.html?hub=1" class="brand" id="headerBrandHome" aria-label="홈 화면으로 이동">
 
         <div class="brand-logo">
 
@@ -3040,7 +3240,7 @@
 
           <p class="business-status-editor-message" id="businessStatusEditorMessage" hidden>비밀번호가 올바르지 않습니다.</p>
 
-          <p class="business-status-editor-hint">영업 상태 등불을 누르면 관리자 제어가 열립니다.</p>
+          <p class="business-status-editor-hint">영업 상태 등불 또는 푸터의 「상호: 짜장나라 세종본점」을 누르면 관리자 제어가 열립니다.</p>
 
         </div>
 
@@ -3081,6 +3281,46 @@
           <p class="business-status-editor-message" id="businessStatusHoursMessage" hidden>영업시간을 저장할 수 없습니다.</p>
 
           <p class="business-status-editor-hint" id="businessStatusHoursSummary">현재 자동 영업시간: 오전 10시 ~ 오후 8시</p>
+
+          <label class="business-status-editor-label" for="businessStatusPosToken">배달 게이트 동기화용 POS 토큰</label>
+
+          <div class="business-status-editor-row">
+
+            <input id="businessStatusPosToken" class="business-status-editor-input" type="password" autocomplete="off" placeholder="POS_API_TOKEN (선택, 배달 차단 동기화)" />
+
+            <button type="button" class="business-status-editor-btn" id="businessStatusPosTokenSaveButton">토큰 저장</button>
+
+          </div>
+
+          <p class="business-status-editor-hint" id="businessStatusSyncHint">강제 휴무·영업시간 저장 시 토큰이 있으면 서버 배달 게이트에도 반영됩니다.</p>
+
+          <div class="business-status-pos-panel" aria-label="포스 프로그램 설치">
+
+            <div class="business-status-editor-title">포스기 주문·관리 프로그램</div>
+
+            <p class="business-status-editor-hint">이 포스 PC에서 주문 진행판과 프린터 브리지를 설치·실행합니다.</p>
+
+            <div class="business-status-pos-actions">
+
+              <a class="business-status-editor-btn business-status-editor-btn--accent" href="pos.html" target="_blank" rel="noopener">주문 진행판 열기</a>
+
+              <a class="business-status-editor-btn business-status-editor-btn--gold" href="downloads/jjajangnara-pos-bridge.zip" download>프린터 브리지 다운로드</a>
+
+              <a class="business-status-editor-btn" href="pos-install.html" target="_blank" rel="noopener">설치 안내 보기</a>
+
+            </div>
+
+            <ol class="business-status-pos-steps">
+
+              <li>프린터 브리지 ZIP을 받아 고정 폴더에 압축 해제 후 <code>install.ps1</code> 실행</li>
+
+              <li>주문 진행판을 열고 연결 설정에 <code>POS_API_TOKEN</code> 입력</li>
+
+              <li>진행판의 「앱 설치」로 바탕화면·시작화면에 고정</li>
+
+            </ol>
+
+          </div>
 
           <p class="business-status-editor-hint">현재 브라우저 세션에만 로그인 상태가 유지됩니다.</p>
 
@@ -3506,9 +3746,11 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-12(세트).jpg.png" alt="세종 혼밥세트 맛집 짜장나라 대표메뉴 혼밥세트" loading="eager" />
+            <img src="assets/images/single_set.png" alt="세종 혼밥세트 맛집 짜장나라 대표메뉴 혼밥세트" loading="eager" />
 
           </div>
+
+          <p class="menu-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
 
           <div class="menu-meta">
 
@@ -3538,9 +3780,11 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-12(세트).jpg.png" alt="세종 달달커플세트 맛집 짜장나라 대표메뉴 달달커플세트" loading="eager" />
+            <img src="assets/images/couple_set.png" alt="세종 달달커플세트 맛집 짜장나라 대표메뉴 달달커플세트" loading="eager" />
 
           </div>
+
+          <p class="menu-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
 
           <div class="menu-meta">
 
@@ -3570,9 +3814,11 @@
 
           <div class="menu-image">
 
-            <img src="assets/images/menu-12(세트).jpg.png" alt="세종 패밀리세트 맛집 짜장나라 대표메뉴 패밀리세트" loading="eager" />
+            <img src="assets/images/family_set.png" alt="세종 패밀리세트 맛집 짜장나라 대표메뉴 패밀리세트" loading="eager" />
 
           </div>
+
+          <p class="menu-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
 
           <div class="menu-meta">
 
@@ -3956,7 +4202,7 @@
 
       <div class="footer-row">
 
-        <span>짜장나라 세종본점</span>
+        <button type="button" class="footer-admin-trigger" id="footerAdminAccess" aria-controls="businessStatusEditor" aria-expanded="false" title="관리자 접속">상호: 짜장나라 세종본점</button>
 
         <span>대표자: 염혜리 · 사업자번호: 308-15-02640</span>
 
@@ -4003,10 +4249,10 @@
 
 
 
-  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260717af"></script>
-  <script src="assets/js/dist/entry-animation.min.js?v=20260717af"></script>
-  <script src="assets/js/dist/detail-character-preload.min.js?v=20260717af"></script>
-  <script src="assets/js/dist/entry-hub.min.js?v=20260717af"></script>
+  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260717hub"></script>
+  <script src="assets/js/dist/entry-animation.min.js?v=20260717hub"></script>
+  <script src="assets/js/dist/detail-character-preload.min.js?v=20260717hub"></script>
+  <script src="assets/js/dist/entry-hub.min.js?v=20260717hub3"></script>
 
   <script>
 
@@ -4201,6 +4447,7 @@
     const businessStatusStorageKey = "jjajangnara-business-status-mode";
     const businessStatusAuthKey = "jjajangnara-business-status-auth";
     const businessHoursStorageKey = "jjajangnara-business-hours";
+    const businessStatusPosTokenKey = "jjajangnara-pos-token";
     const businessStatusEditorPassword = "01059455925";
     const defaultBusinessHours = {
       openMinutes: 10 * 60,
@@ -4323,6 +4570,118 @@
       } catch (error) {
 
         console.log("영업시간 저장값을 초기화하지 못했습니다:", error);
+
+      }
+
+    }
+
+
+
+    function getStoredPosToken() {
+
+      try {
+
+        return String(globalThis.localStorage.getItem(businessStatusPosTokenKey) || "").trim();
+
+      } catch (error) {
+
+        return "";
+
+      }
+
+    }
+
+
+
+    function setStoredPosToken(token) {
+
+      try {
+
+        if (token) {
+
+          globalThis.localStorage.setItem(businessStatusPosTokenKey, token);
+
+        } else {
+
+          globalThis.localStorage.removeItem(businessStatusPosTokenKey);
+
+        }
+
+      } catch (error) {
+
+        console.log("POS 토큰을 저장하지 못했습니다:", error);
+
+      }
+
+    }
+
+
+
+    async function syncBusinessRuntimeToServer(extra = {}) {
+
+      const token = getStoredPosToken();
+      const hint = document.getElementById("businessStatusSyncHint");
+      const hours = getBusinessHours();
+      const mode = getBusinessStatusMode();
+      const payload = {
+        action: "business-status",
+        forceClosed: mode === "closed",
+        forceOpen: mode === "open",
+        openMinutes: hours.openMinutes,
+        closeMinutes: hours.closeMinutes,
+        ...extra,
+      };
+
+      if (!token) {
+
+        if (hint) {
+
+          hint.textContent = "로컬 표시만 변경되었습니다. 배달 게이트 동기화에는 POS 토큰이 필요합니다.";
+
+        }
+
+        return false;
+
+      }
+
+      try {
+
+        const response = await fetch("/.netlify/functions/pos-orders", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        });
+        const result = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+
+          throw new Error(result.message || "서버 동기화 실패");
+
+        }
+
+        if (hint) {
+
+          hint.textContent = "서버 배달 게이트에 영업 설정을 반영했습니다.";
+
+        }
+
+        await fetchStoreRuntimeStatus();
+        return true;
+
+      } catch (error) {
+
+        console.log("영업 상태 서버 동기화 실패:", error);
+
+        if (hint) {
+
+          hint.textContent = `서버 동기화 실패: ${error.message || "토큰·네트워크를 확인해 주세요."}`;
+
+        }
+
+        return false;
 
       }
 
@@ -4531,6 +4890,14 @@
 
       }
 
+      const footerAdminAccess = document.getElementById("footerAdminAccess");
+
+      if (footerAdminAccess) {
+
+        footerAdminAccess.setAttribute("aria-expanded", String(isPanelOpen));
+
+      }
+
       if (!isAuthenticated && editorMessage) {
 
         editorMessage.hidden = true;
@@ -4659,6 +5026,7 @@
           setBusinessStatusMode(nextMode);
           updateBusinessStatusEditorUi();
           updateBusinessStatusLamp();
+          syncBusinessRuntimeToServer();
 
         });
 
@@ -4728,6 +5096,7 @@
           syncBusinessHoursEditorUi();
           updateBusinessHoursText();
           updateBusinessStatusLamp();
+          syncBusinessRuntimeToServer();
 
         });
 
@@ -4747,6 +5116,27 @@
           syncBusinessHoursEditorUi();
           updateBusinessHoursText();
           updateBusinessStatusLamp();
+          syncBusinessRuntimeToServer();
+
+        });
+
+      }
+
+      const posTokenInput = document.getElementById("businessStatusPosToken");
+      const posTokenSaveButton = document.getElementById("businessStatusPosTokenSaveButton");
+
+      if (posTokenInput) {
+
+        posTokenInput.value = getStoredPosToken();
+
+      }
+
+      if (posTokenSaveButton && posTokenInput) {
+
+        posTokenSaveButton.addEventListener("click", function () {
+
+          setStoredPosToken(posTokenInput.value.trim());
+          syncBusinessRuntimeToServer();
 
         });
 
@@ -4796,6 +5186,39 @@
 
       }
 
+      const footerAdminAccess = document.getElementById("footerAdminAccess");
+
+      if (footerAdminAccess) {
+
+        footerAdminAccess.addEventListener("click", function () {
+
+          if (!isBusinessStatusEditorPanelOpen()) {
+
+            setBusinessStatusEditorPanelOpen(true);
+            updateBusinessStatusEditorUi();
+
+          } else {
+
+            updateBusinessStatusEditorUi();
+
+          }
+
+          globalThis.setTimeout(function () {
+
+            scrollToBusinessStatusEditorPanel();
+
+            if (!isBusinessStatusAuthenticated() && passwordInput) {
+
+              passwordInput.focus();
+
+            }
+
+          }, 40);
+
+        });
+
+      }
+
       updateBusinessStatusEditorUi();
 
     }
@@ -4811,6 +5234,8 @@
           deliveryAvailable: false,
           holiday: false,
           holidayMessage: "",
+          forceClosed: false,
+          withinHours: false,
         };
       } catch (error) {
         console.log("포스 운영 상태를 확인하지 못했습니다:", error);
@@ -4819,6 +5244,8 @@
           deliveryAvailable: false,
           holiday: false,
           holidayMessage: "",
+          forceClosed: false,
+          withinHours: false,
         };
       }
       updateBusinessStatusLamp();
@@ -4864,7 +5291,17 @@
         return;
       }
 
-      if (overrideMode === "open") {
+      if (storeRuntimeStatus?.forceClosed || overrideMode === "closed") {
+        statusElement.classList.add("is-closed");
+        statusElement.classList.remove("is-open");
+        statusTitle.textContent = "오늘은 휴무일";
+        statusDetail.textContent = storeRuntimeStatus?.forceClosed
+          ? `서버 휴무 설정중 · 자동 시간 ${businessHoursDisplay}`
+          : `관리자 설정으로 휴무 표시중 · 자동 시간 ${businessHoursDisplay}`;
+        return;
+      }
+
+      if (overrideMode === "open" || storeRuntimeStatus?.forceOpen) {
         statusElement.classList.add("is-open");
         statusElement.classList.remove("is-closed");
         if (storeRuntimeStatus?.posOnline) {
@@ -4874,14 +5311,6 @@
           statusTitle.textContent = "홀 영업중";
           statusDetail.textContent = "포스 미연결로 현재 배달 주문은 불가능합니다";
         }
-        return;
-      }
-
-      if (overrideMode === "closed") {
-        statusElement.classList.add("is-closed");
-        statusElement.classList.remove("is-open");
-        statusTitle.textContent = "오늘은 휴무일";
-        statusDetail.textContent = `관리자 설정으로 휴무 표시중 · 자동 시간 ${businessHoursDisplay}`;
         return;
       }
 
@@ -4947,25 +5376,40 @@
     function returnToEntryScreen(event) {
       if (event) {
         event.preventDefault();
+        event.stopPropagation();
       }
+      // PC·모바일 공통: 진입 애니 없이 히어로+메뉴 허브
       if (globalThis.EntryHub && typeof globalThis.EntryHub.reopenHomeEntry === "function") {
         globalThis.EntryHub.reopenHomeEntry();
         return;
       }
       try {
         globalThis.sessionStorage.removeItem("jjajangnara-hub-dismissed");
-        globalThis.sessionStorage.removeItem("jjajangnara-intro-seen");
+        globalThis.sessionStorage.setItem("jjajangnara-intro-seen", "1");
       } catch (_) {}
-      globalThis.location.href = "index.html?entry=1";
+      globalThis.location.href = "index.html?hub=1";
     }
 
 
 
     function initHomeEntry() {
       var forceEntry = false;
+      var forceHub = false;
       try {
-        forceEntry = new URLSearchParams(globalThis.location.search).get("entry") === "1";
-        if (forceEntry) {
+        var entryParams = new URLSearchParams(globalThis.location.search);
+        forceEntry = entryParams.get("entry") === "1";
+        forceHub = entryParams.get("hub") === "1";
+        if (forceHub) {
+          if (globalThis.EntryHub && typeof globalThis.EntryHub.clearHubDismissal === "function") {
+            globalThis.EntryHub.clearHubDismissal();
+          } else {
+            globalThis.sessionStorage.removeItem("jjajangnara-hub-dismissed");
+          }
+          try {
+            globalThis.sessionStorage.setItem("jjajangnara-intro-seen", "1");
+          } catch (_) {}
+          globalThis.history.replaceState({}, "", globalThis.location.pathname);
+        } else if (forceEntry) {
           if (globalThis.EntryHub && typeof globalThis.EntryHub.clearEntryDismissal === "function") {
             globalThis.EntryHub.clearEntryDismissal();
           } else {
@@ -4983,6 +5427,12 @@
         globalThis.HeroCharacter.preload().catch(function (error) {
           console.log("3D 캐릭터 사전 로딩 실패, 대체 이미지를 사용합니다:", error);
         });
+      }
+
+      // 홈복귀(?hub=1): 진입 글자 애니메이션 없이 히어로+메뉴 허브만 표시
+      if (forceHub) {
+        openEntryHub({ force: true });
+        return;
       }
 
       var reduceMotion = false;
@@ -5093,10 +5543,10 @@
     <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
     <div class="detail-character__col">
       <div class="detail-character__stage"></div>
-      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+      <a class="detail-character__home" href="index.html?hub=1">홈복귀</a>
     </div>
   </aside>
-  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717hub"></script>
 
 </body>
 

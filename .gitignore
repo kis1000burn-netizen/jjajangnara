@@ -4,3 +4,7 @@ node_modules/
 .env
 .env.*
 !.env.example
+pos-bridge/config.json
+pos-bridge/*.log
+pos-bridge/print-state.json
+downloads/_pos-bridge-staging/

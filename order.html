@@ -154,9 +154,23 @@
       border:1px solid var(--line); border-radius:16px; padding:14px;
       display:flex; flex-direction:column; gap:8px; position:relative;
     }
+    .set-card-image{
+      width:100%; aspect-ratio:4/3; border-radius:12px; overflow:hidden;
+      background:#0b0d11; border:1px solid var(--line);
+    }
+    .set-card-image img{width:100%; height:100%; object-fit:cover; display:block;}
+    .set-ai-note{
+      margin:0; font-size:11px; line-height:1.4; color:var(--muted);
+      opacity:.9; word-break:keep-all;
+    }
     .set-title{font-size:18px; font-weight:800;}
     .set-price{font-size:18px; font-weight:800; color:#fff;}
     .set-desc{font-size:13px; color:var(--muted); line-height:1.5;}
+    .sets-ai-banner{
+      margin:0 0 10px; padding:8px 10px; border-radius:10px;
+      border:1px solid var(--line); background:rgba(8,34,54,.55);
+      font-size:12px; color:var(--muted); word-break:keep-all;
+    }
     .btn{
       cursor:pointer; border-radius:12px;
       padding:12px 12px; font-weight:800;
@@ -562,9 +576,9 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717af" />
-  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717af" />
+  <link rel="stylesheet" href="assets/css/dist/site-typography.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/blue-glass-theme.min.css?v=20260717hub" />
+  <link rel="stylesheet" href="assets/css/dist/detail-character.min.css?v=20260717m130" />
 </head>
 
 <body>
@@ -639,9 +653,14 @@
       세트는 <b>통합가격</b>이며, 메인은 "택1 / 택2 / 택3" 방식입니다.<br/>
       같은 기본 메뉴를 중복 선택할 수 있으며 변경 메뉴 추가금과 곱빼기(+1,000원/개)가 개별 적용됩니다.
     </div>
+    <p class="sets-ai-banner">※ 세트 안내 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
 
     <div class="grid cols-3 sets-grid-top">
       <div class="set-card">
+        <div class="set-card-image">
+          <img src="assets/images/single_set.png" alt="혼밥세트" loading="lazy" />
+        </div>
+        <p class="set-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
         <div class="set-title">혼밥세트</div>
         <div class="set-price">16,000원</div>
         <div class="set-desc">
@@ -653,6 +672,10 @@
       </div>
 
       <div class="set-card">
+        <div class="set-card-image">
+          <img src="assets/images/couple_set.png" alt="달달커플세트" loading="lazy" />
+        </div>
+        <p class="set-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
         <div class="set-title">달달커플세트</div>
         <div class="set-price">22,000원</div>
         <div class="set-desc">
@@ -664,6 +687,10 @@
       </div>
 
       <div class="set-card">
+        <div class="set-card-image">
+          <img src="assets/images/family_set.png" alt="패밀리세트" loading="lazy" />
+        </div>
+        <p class="set-ai-note">※ 해당 이미지는 AI로 생성된 것으로 실제와 다를 수 있음</p>
         <div class="set-title">패밀리세트</div>
         <div class="set-price">31,000원</div>
         <div class="set-desc">
@@ -834,9 +861,12 @@
   };
 
   const EXTRA_DOUBLE = 1000;
+  const MINIMUM_ORDER_AMOUNT = 15000;
   const pendingOrderStoragePrefix = "jjajangnara-pending-order:";
   const aiCartStorageKey = "jjajangnara-ai-cart";
+  const setPayloadStorageKey = "jjangnara_set_payload";
   const requestedOrderMode = new URLSearchParams(globalThis.location.search).get("mode");
+  const requestedSetKey = new URLSearchParams(globalThis.location.search).get("set");
 
   /* ===== 상태 ===== */
   let activeSetKey = null;
@@ -908,6 +938,23 @@
 
   function savePendingOrder(orderId, orderData){
     globalThis.localStorage.setItem(`${pendingOrderStoragePrefix}${orderId}`, JSON.stringify(orderData));
+  }
+
+  async function backupPendingOrder(orderId, orderData){
+    try{
+      const response = await fetch("/.netlify/functions/pending-order", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ orderId, order: orderData }),
+      });
+      if(!response.ok){
+        const result = await response.json().catch(()=>({}));
+        throw new Error(result.message || "대기 주문 서버 저장 실패");
+      }
+    }catch(error){
+      console.warn("pending order backup failed:", error);
+      // localStorage 백업은 유지. 서버 실패만으로는 결제를 막지 않음.
+    }
   }
 
   function setOrderSubmitStatus(type, message){
@@ -1238,6 +1285,66 @@
     }
   }
 
+  function mapLegacySetType(setType){
+    if(setType === "single" || setType === "solo") return "solo";
+    if(setType === "couple") return "couple";
+    if(setType === "family") return "family";
+    return "";
+  }
+
+  function importSetPayload(){
+    let payload = null;
+    try{
+      payload = JSON.parse(globalThis.localStorage.getItem(setPayloadStorageKey) || "null");
+      globalThis.localStorage.removeItem(setPayloadStorageKey);
+    }catch(error){
+      console.log("세트 구성을 불러오지 못했습니다:", error);
+      return false;
+    }
+
+    if(!payload || !Array.isArray(payload.mains) || payload.mains.length === 0){
+      return false;
+    }
+
+    const setKey = mapLegacySetType(payload.setType);
+    const rule = setRules[setKey];
+    if(!rule){
+      return false;
+    }
+
+    const mainsText = payload.mains.map((main)=>{
+      const title = main.mainTitle || main.mainId || "메인";
+      const upgrade = main.upgradestr && main.upgradestr !== "기본(면)" ? `→${main.upgradestr}` : "";
+      const opts = [];
+      if(main.opts?.gop) opts.push("곱빼기");
+      if(main.opts?.sauce) opts.push("짜장소스");
+      const optText = opts.length ? `(${opts.join("+")})` : "";
+      return `${title}${upgrade}${optText}`;
+    }).join(", ");
+
+    cart.push({
+      type:"set",
+      name: payload.setName || rule.title,
+      price: Number(payload.totalPrice) || rule.price,
+      detail: `${payload.tang?.title || rule.must} / 메인: ${mainsText}`
+    });
+    renderCart();
+    goOrderInfo();
+    return true;
+  }
+
+  function bootstrapRequestedSet(){
+    if(importSetPayload()){
+      return;
+    }
+    const setKey = mapLegacySetType(requestedSetKey);
+    if(setKey){
+      openBuilder(setKey);
+    }else if(globalThis.location.hash === "#set=ready" || globalThis.location.hash === "#builderSection"){
+      document.getElementById("builderSection")?.scrollIntoView({behavior:"smooth", block:"start"});
+    }
+  }
+
   async function requestTossPayment(orderData){
     const tossPayments = globalThis.TossPayments(paymentConfig.tossClientKey);
     const orderId = createOrderId();
@@ -1248,6 +1355,7 @@
     };
 
     savePendingOrder(orderId, pendingOrder);
+    await backupPendingOrder(orderId, pendingOrder);
 
     await tossPayments.requestPayment("카드", {
       amount: orderData.total,
@@ -1268,6 +1376,12 @@
     }
     if(status.holiday){
       throw new Error(status.holidayMessage || "오늘은 휴무일로 배달 주문이 불가능합니다.");
+    }
+    if(status.forceClosed){
+      throw new Error("현재 매장 휴무 설정으로 배달 주문이 불가능합니다.");
+    }
+    if(status.withinHours === false){
+      throw new Error("지금은 영업시간이 아니라 배달 주문이 불가능합니다.");
     }
     if(!status.deliveryAvailable){
       throw new Error("현재 홀 영업중이나 포스 앱이 실행되지 않아 배달 주문은 불가능합니다.");
@@ -1290,6 +1404,12 @@
     
     if(cart.length === 0){
       alert("장바구니가 비어있습니다. 메뉴를 선택해주세요.");
+      return;
+    }
+
+    const orderTotal = cart.reduce((a,b)=>a+b.price,0);
+    if(orderTotal < MINIMUM_ORDER_AMOUNT){
+      alert(`최소 주문금액은 ${won(MINIMUM_ORDER_AMOUNT)}입니다. (현재 ${won(orderTotal)})`);
       return;
     }
 
@@ -1437,11 +1557,8 @@
   /* ===== 시작 ===== */
   renderSingles();
   renderBuilder();
-  const requestedSetKey = new URLSearchParams(globalThis.location.search).get("set");
-  if(requestedSetKey && setRules[requestedSetKey]){
-    globalThis.setTimeout(()=>openBuilder(requestedSetKey), 80);
-  }
   importAiCart();
+  bootstrapRequestedSet();
   renderCart();
   
   // 팝업 토글 UI 초기화
@@ -1456,9 +1573,9 @@
     <div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>
     <div class="detail-character__col">
       <div class="detail-character__stage"></div>
-      <a class="detail-character__home" href="index.html?entry=1">홈복귀</a>
+      <a class="detail-character__home" href="index.html?hub=1">홈복귀</a>
     </div>
   </aside>
-  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717af"></script>
+  <script type="module" src="assets/js/dist/detail-character.min.js?v=20260717hub"></script>
 </body>
 </html>

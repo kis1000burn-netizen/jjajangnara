@@ -1,4 +1,4 @@
-const { savePaidOrder } = require("./_orders");
+const { deletePendingOrder, savePaidOrder } = require("./_orders");
 
 exports.handler = async function (event) {
   if (event.httpMethod !== "POST") {
@@ -62,6 +62,11 @@ exports.handler = async function (event) {
       approvedAt: result.approvedAt,
     };
     const posOrder = await savePaidOrder(event, order, paymentData);
+    try {
+      await deletePendingOrder(event, orderId);
+    } catch (cleanupError) {
+      console.log("pending cleanup skipped:", cleanupError.message);
+    }
 
     return {
       statusCode: 200,

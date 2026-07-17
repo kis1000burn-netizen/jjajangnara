@@ -21,11 +21,26 @@ const DANCE_URLS = [
 let activeController = null;
 let hubObserver = null;
 
+function isIndexPage() {
+  try {
+    const path = globalThis.location.pathname || "";
+    return (
+      /(?:^|\/)index\.html?$/i.test(path) ||
+      path === "/" ||
+      path === "" ||
+      /\/$/.test(path) && !/\.html?$/i.test(path)
+    );
+  } catch (_) {
+    return false;
+  }
+}
+
+/** PC·모바일 공통: 진입 글자애니 없이 히어로+메뉴 허브로 복귀 */
 function goHomeEntry() {
   try {
     sessionStorage.removeItem("jjajangnara-hub-dismissed");
-    sessionStorage.removeItem("jjajangnara-intro-seen");
     sessionStorage.removeItem("jjajangnara-store-video-enabled");
+    sessionStorage.setItem("jjajangnara-intro-seen", "1");
     if (globalThis.JjajangDetail3D?.clearDanceMode) {
       globalThis.JjajangDetail3D.clearDanceMode();
     } else {
@@ -33,7 +48,16 @@ function goHomeEntry() {
       sessionStorage.removeItem("jjajangnara-mini-dance");
     }
   } catch (_) {}
-  location.href = "index.html?entry=1";
+
+  if (isIndexPage() && globalThis.EntryHub?.reopenHomeEntry) {
+    try {
+      globalThis.history.replaceState({}, "", globalThis.location.pathname || "/");
+    } catch (_) {}
+    globalThis.EntryHub.reopenHomeEntry();
+    return;
+  }
+
+  location.href = "index.html?hub=1";
 }
 
 function resolveRigPlan() {
@@ -69,7 +93,7 @@ function ensureRoot() {
     '<div class="detail-character__bubble" aria-hidden="true">메뉴·주문이 필요하면 눌러주세요</div>' +
     '<div class="detail-character__col">' +
     '<div class="detail-character__stage"></div>' +
-    '<a class="detail-character__home" href="index.html?entry=1">홈복귀</a>' +
+    '<a class="detail-character__home" href="index.html?hub=1">홈복귀</a>' +
     "</div>";
   document.body.appendChild(root);
   return root;
@@ -107,7 +131,7 @@ function ensureStage(root) {
   if (!root.querySelector(".detail-character__home")) {
     const home = document.createElement("a");
     home.className = "detail-character__home";
-    home.href = "index.html?entry=1";
+    home.href = "index.html?hub=1";
     home.textContent = "홈복귀";
     col.appendChild(home);
   }
@@ -119,11 +143,18 @@ function bindInteractions(root) {
   const homeBtn = root.querySelector(".detail-character__home");
   if (homeBtn && !homeBtn.dataset.bound) {
     homeBtn.dataset.bound = "1";
-    homeBtn.addEventListener("click", (event) => {
+    let homeLockUntil = 0;
+    const onHome = (event) => {
       event.preventDefault();
       event.stopPropagation();
+      const now = Date.now();
+      if (now < homeLockUntil) return;
+      homeLockUntil = now + 700;
       goHomeEntry();
-    });
+    };
+    // click은 PC·모바일(탭) 공통. 터치 지연 대비 pointerup도 동일 핸들러(중복 방지 락)
+    homeBtn.addEventListener("click", onHome);
+    homeBtn.addEventListener("pointerup", onHome);
   }
 
   if (root.dataset.boundExpand === "1") return;

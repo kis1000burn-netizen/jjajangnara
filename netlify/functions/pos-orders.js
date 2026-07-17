@@ -59,11 +59,17 @@ exports.handler = async function (event) {
         return json(200, { runtime });
       }
       if (body.action === "business-status") {
-        const runtime = await updateRuntimeStatus(event, {
-          holiday: Boolean(body.holiday),
-          holidayMessage: body.holidayMessage,
-          holidayUntil: body.holidayUntil || null,
-        });
+        const patch = {};
+        if (typeof body.holiday === "boolean") patch.holiday = body.holiday;
+        if (typeof body.holidayMessage === "string") patch.holidayMessage = body.holidayMessage;
+        if (Object.prototype.hasOwnProperty.call(body, "holidayUntil")) {
+          patch.holidayUntil = body.holidayUntil || null;
+        }
+        if (typeof body.forceClosed === "boolean") patch.forceClosed = body.forceClosed;
+        if (typeof body.forceOpen === "boolean") patch.forceOpen = body.forceOpen;
+        if (Number.isFinite(Number(body.openMinutes))) patch.openMinutes = Number(body.openMinutes);
+        if (Number.isFinite(Number(body.closeMinutes))) patch.closeMinutes = Number(body.closeMinutes);
+        const runtime = await updateRuntimeStatus(event, patch);
         return json(200, { runtime });
       }
       if (!body.orderId) return json(400, { message: "orderId가 필요합니다." });

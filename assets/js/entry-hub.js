@@ -17,8 +17,7 @@
     { id: "ai", title: "AI 음성 주문", href: "ai-order.html", badge: "활성" },
     { id: "member", title: "회원 · 배달", href: "member.html", badge: "준비중" },
     { id: "browse", title: "매장 둘러보기", href: "#home", browse: true },
-    { id: "order", title: "바로 주문하기", href: "order.html", wide: true },
-    { id: "home-entry", title: "홈복귀", href: "#", wide: true, homeEntry: true }
+    { id: "order", title: "바로 주문하기", href: "order.html", wide: true }
   ];
 
   function injectStyles() {
@@ -63,11 +62,6 @@
       "42%{color:#00c8f0;}57%{color:#c084fc;}71%{color:#ff80b4;}",
       "85%{color:#e8a735;filter:brightness(1.45);text-shadow:0 0 10px currentColor;transform:scale(1.08);}}",
 
-      "#" + HUB_ID + " .eh-status{position:absolute;top:72px;left:50%;transform:translateX(-50%);",
-      "color:rgba(226,232,240,.55);font-size:11px;font-weight:700;white-space:nowrap;pointer-events:none;}",
-      "#" + HUB_ID + " .eh-status.is-loaded{color:rgba(103,214,200,.82);}",
-      "#" + HUB_ID + " .eh-status.is-error{color:rgba(251,191,36,.9);}",
-
       /* PC: 오른쪽 말풍선·메뉴 스택 (Wither .ws-bubble-stack) */
       "#" + HUB_ID + " .eh-bubble-stack{position:absolute;top:50%;right:clamp(18px,5vw,84px);",
       "width:min(380px,34vw);transform:translateY(-50%);display:flex;flex-direction:column;",
@@ -97,8 +91,6 @@
       "#" + HUB_ID + " .eh-btn.is-primary{border-color:rgba(17,139,198,.55);",
       "background:linear-gradient(135deg,rgba(39,151,201,.72),rgba(78,181,219,.45));}",
       "#" + HUB_ID + " .eh-btn.is-wide{grid-column:1/-1;}",
-      "#" + HUB_ID + " .eh-btn.is-home{border-color:rgba(155,224,250,.45);",
-      "background:linear-gradient(135deg,rgba(39,151,201,.92),rgba(123,216,245,.88));color:#031926;}",
       "#" + HUB_ID + " .eh-badge{font-size:.62rem;font-weight:700;padding:.12rem .32rem;border-radius:999px;",
       "border:1px solid rgba(137,214,244,.35);color:#b9edff;background:rgba(4,35,55,.48);}",
 
@@ -123,8 +115,6 @@
       "letter-spacing:-.02em;}",
       "#" + HUB_ID + " .eh-brand-line{white-space:nowrap;}",
       "#" + HUB_ID + " .eh-stage{overflow:hidden!important;}",
-      "#" + HUB_ID + " .eh-status{position:relative!important;top:auto!important;left:auto!important;",
-      "transform:none!important;margin-bottom:4px;flex-shrink:0;font-size:10px;}",
       "#" + HUB_ID + " .eh-bubble-stack{position:relative!important;top:auto!important;right:auto!important;",
       "width:100%;transform:none!important;flex:1;min-height:0;gap:8px;}",
       "#" + HUB_ID + " .eh-speech{font-size:13px;padding:10px 16px;flex-shrink:0;}",
@@ -186,7 +176,6 @@
       var classes = "eh-btn";
       if (action.primary) classes += " is-primary";
       if (action.wide) classes += " is-wide";
-      if (action.homeEntry) classes += " is-home";
       var badge = action.badge
         ? '<span class="eh-badge">' + action.badge + "</span>"
         : "";
@@ -236,7 +225,6 @@
       buildDomainHtml() +
       "</p>" +
       "</div>" +
-      '<div class="eh-status" id="ehCharacterStatus">3D 안내 캐릭터 불러오는 중…</div>' +
       '<div class="eh-bubble-stack">' +
       '<div class="eh-speech" id="ehSpeech" role="status" aria-live="polite"></div>' +
       '<div class="eh-menu" id="ehMenu" role="navigation" aria-label="서비스 메뉴">' +
@@ -256,12 +244,8 @@
     return root;
   }
 
-  function setStatus(text, state) {
-    var el = document.getElementById("ehCharacterStatus");
-    if (!el) return;
-    el.textContent = text;
-    el.classList.remove("is-loaded", "is-error");
-    if (state) el.classList.add(state);
+  function setStatus() {
+    // 로딩 상태 문구는 도메인과 겹쳐 노출하지 않음 (콘솔만 기록)
   }
 
   function revealUi() {
@@ -312,38 +296,44 @@
     }
   }
 
-  function clearEntryDismissal() {
+  function clearHubDismissal() {
     try {
       globalThis.sessionStorage.removeItem(STORAGE_KEY);
-      globalThis.sessionStorage.removeItem("jjajangnara-intro-seen");
       globalThis.sessionStorage.removeItem(BROWSE_VIDEO_KEY);
     } catch (_) {}
   }
 
+  function clearEntryDismissal() {
+    clearHubDismissal();
+    try {
+      globalThis.sessionStorage.removeItem("jjajangnara-intro-seen");
+    } catch (_) {}
+  }
+
+  /** PC(우측 메뉴)·모바일(하단 패널) 공통: 히어로+메뉴 허브 복귀, 진입 글자애니 생략 */
   function reopenHomeEntry() {
     useDefaultMiniRig();
-    clearEntryDismissal();
+    clearHubDismissal();
+    try {
+      globalThis.sessionStorage.setItem("jjajangnara-intro-seen", "1");
+    } catch (_) {}
     document.documentElement.classList.add("entry-pending");
-    open({ force: true, deferCharacterStart: true });
-    if (globalThis.EntryAnimation && typeof globalThis.EntryAnimation.play === "function") {
-      document.body.classList.add("is-intro-playing");
-      globalThis.EntryAnimation.play(
-        {
-          taglineText: "짜장나라 세종본점",
-          domainText: DOMAIN_TEXT,
-          skipText: "탭하여 건너뛰기",
-          backgroundColor: "#111111"
-        },
-        function () {
-          document.body.classList.remove("is-intro-playing");
-          activateCharacter();
-          revealUi();
-        }
-      );
-    } else {
-      activateCharacter();
-      revealUi();
+    document.body.classList.remove("is-intro-playing");
+    if (globalThis.EntryAnimation && typeof globalThis.EntryAnimation.skip === "function") {
+      try {
+        globalThis.EntryAnimation.skip();
+      } catch (_) {}
     }
+    open({ force: true, deferCharacterStart: false });
+    activateCharacter();
+    revealUi();
+    try {
+      document.documentElement.classList.remove("entry-pending");
+      if (globalThis.__entryRevealFailsafe) {
+        globalThis.clearTimeout(globalThis.__entryRevealFailsafe);
+        globalThis.__entryRevealFailsafe = null;
+      }
+    } catch (_) {}
     return true;
   }
 
@@ -366,12 +356,6 @@
   }
 
   function handleAction(actionId) {
-    if (actionId === "home-entry") {
-      useDefaultMiniRig();
-      reopenHomeEntry();
-      return;
-    }
-
     var action = ACTIONS.find(function (item) {
       return item.id === actionId;
     });
@@ -545,6 +529,7 @@
     initStoreVideoGate: initStoreVideoGate,
     revealStoreVideo: revealStoreVideo,
     reopenHomeEntry: reopenHomeEntry,
+    clearHubDismissal: clearHubDismissal,
     clearEntryDismissal: clearEntryDismissal
   };
 })();
