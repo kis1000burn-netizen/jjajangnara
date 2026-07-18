@@ -96,7 +96,7 @@
    * - 최초 1회만 OS 권한 창을 띄움
    */
   function ensureMicrophoneAccess() {
-    if (micUnlocked && (getSavedStatus() === "granted" || isPersistentlyGranted())) {
+    if (micUnlocked) {
       return Promise.resolve(true);
     }
     if (ensurePromise) return ensurePromise;
@@ -117,22 +117,15 @@
         return false;
       }
 
-      // 브라우저가 이미 허용 → 스트림 재요청 없이 통과 (반복 권한창 차단)
+      // 브라우저가 실제로 허용한 상태만 신뢰한다.
       if (state === "granted") {
         micUnlocked = true;
         saveStatus("granted");
         return true;
       }
 
-      // 이전 방문에서 허용 기록이 있으면, 불필요한 getUserMedia 재호출 없이 통과
-      // (실제 거부 시 SpeechRecognition not-allowed에서 clearGrant 후 모달 재표시)
-      if (isPersistentlyGranted()) {
-        micUnlocked = true;
-        saveStatus("granted");
-        return true;
-      }
-
-      // 최초 1회만 OS 권한 요청
+      // prompt 또는 Permissions API 미지원 상태에서는 사용자 클릭 시에만
+      // 실제 권한을 확인한다. localStorage 기록만으로 허용을 가정하지 않는다.
       return requestMicrophoneStream().catch(function (error) {
         if (error && error.name === "NotAllowedError") {
           clearGrant();
@@ -164,7 +157,7 @@
     }).then(function (permissionState) {
       var savedStatus = getSavedStatus();
 
-      if (!options.force && (permissionState === "granted" || isPersistentlyGranted() || savedStatus === "granted")) {
+      if (!options.force && (permissionState === "granted" || micUnlocked)) {
         micUnlocked = true;
         saveStatus("granted");
         activePromise = null;
@@ -292,7 +285,6 @@
   }
 
   if (isPersistentlyGranted()) {
-    micUnlocked = true;
     try {
       globalThis.sessionStorage.setItem(SESSION_KEY, "granted");
     } catch (_) {}

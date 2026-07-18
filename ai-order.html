@@ -448,8 +448,8 @@
     </section>
   </main>
 
-  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260718mic2"></script>
-  <script src="assets/js/dist/ai-order-config.min.js?v=20260718mic2"></script>
+  <script src="assets/js/dist/ai-voice-preflight.min.js?v=20260718mic3"></script>
+  <script src="assets/js/dist/ai-order-config.min.js?v=20260718mic3"></script>
   <script>
     (function () {
       "use strict";
@@ -477,6 +477,7 @@
       var listeningWanted = false;
       var recognizing = false;
       var speaking = false;
+      var suppressRecognitionUntil = 0;
       var finalBuffer = "";
       var finalBufferTimer = null;
       var restartTimer = null;
@@ -484,7 +485,6 @@
       var RESTART_AFTER_TTS_MS = 1400;
       var currentOrderMode = "";
       var pendingSetConfirm = null;
-      var preflightRequested = false;
 
       var menuGrid = document.getElementById("menuGrid");
       var setGrid = document.getElementById("setGrid");
@@ -627,20 +627,11 @@
         transcript.textContent = message;
         if (!("speechSynthesis" in globalThis)) {
           speaking = false;
-          scheduleRecognitionRestart(RESTART_AFTER_TTS_MS);
           return;
         }
 
         speaking = true;
-        if (restartTimer) {
-          globalThis.clearTimeout(restartTimer);
-          restartTimer = null;
-        }
-        if (recognition) {
-          try { recognition.abort(); } catch (_) {
-            try { recognition.stop(); } catch (_) {}
-          }
-        }
+        suppressRecognitionUntil = Date.now() + Math.max(2500, String(message || "").length * 150);
         try {
           globalThis.speechSynthesis.cancel();
         } catch (_) {}
@@ -654,7 +645,15 @@
           if (settled) return;
           settled = true;
           speaking = false;
-          scheduleRecognitionRestart(RESTART_AFTER_TTS_MS);
+          // TTS가 마이크에 잡힌 결과가 뒤늦게 오는 것을 잠시 무시한다.
+          suppressRecognitionUntil = Date.now() + 650;
+          if (listeningWanted) {
+            if (recognizing) {
+              setStatus("듣고 있습니다. 메뉴와 수량을 말씀해 주세요.", true);
+            } else {
+              scheduleRecognitionRestart(250);
+            }
+          }
         };
         utterance.onend = finishSpeak;
         utterance.onerror = finishSpeak;
@@ -1003,11 +1002,8 @@
         if (globalThis.AiVoicePreflight?.clearGrant) {
           globalThis.AiVoicePreflight.clearGrant();
         }
-        setStatus("마이크 권한이 필요합니다. 허용 안내를 다시 표시합니다.", false);
-        if (!preflightRequested) {
-          preflightRequested = true;
-          globalThis.AiVoicePreflight?.request?.({ force: true });
-        }
+        // 오류 이벤트에서 권한창을 다시 열지 않는다. 다음 사용자 클릭에서만 재확인한다.
+        setStatus("마이크가 차단되었습니다. 주소창의 마이크 설정을 허용한 뒤 음성 주문 시작을 다시 눌러 주세요.", false);
       }
 
       function setupRecognition() {
@@ -1025,8 +1021,8 @@
 
         recognition = new SpeechRecognition();
         recognition.lang = "ko-KR";
-        // Chrome에서 continuous=true는 끊김·권한 재요청이 잦아 단발+수동 재시작이 안정적
-        recognition.continuous = false;
+        // 한 번 시작한 인식 세션을 유지해 반복 start()와 권한 재확인을 최소화한다.
+        recognition.continuous = true;
         recognition.interimResults = true;
         recognition.maxAlternatives = 3;
 
@@ -1036,6 +1032,8 @@
         };
 
         recognition.onresult = function (event) {
+          // 안내 TTS 자체를 주문으로 오인하지 않도록 해당 구간 결과를 버린다.
+          if (speaking || Date.now() < suppressRecognitionUntil) return;
           var interim = "";
           var finalText = "";
           for (var i = event.resultIndex; i < event.results.length; i += 1) {
@@ -1115,7 +1113,6 @@
             handleMicPermissionDenied();
             return;
           }
-          preflightRequested = false;
           listeningWanted = true;
           try { globalThis.speechSynthesis?.cancel(); } catch (_) {}
           speaking = false;
@@ -1125,6 +1122,12 @@
             finalBufferTimer = null;
           }
           setStatus("주문 유형 안내를 시작합니다.", true);
+          // 사용자 클릭/권한 허용 흐름 안에서 인식을 먼저 시작한다.
+          try {
+            recognition.start();
+          } catch (_) {
+            scheduleRecognitionRestart(250);
+          }
           speak(currentOrderMode ? CONFIG.voice[
             currentOrderMode === "single" ? "singleReady" : currentOrderMode === "set" ? "setReady" : "mixedReady"
           ] : CONFIG.voice.opening);
@@ -1154,11 +1157,8 @@
           micButton.disabled = true;
           setStatus("텍스트 주문 모드입니다. 아래 입력창을 이용해 주세요.", false);
         } else if (status === "granted") {
-          preflightRequested = false;
           micButton.disabled = false;
           setStatus("마이크 점검이 완료되었습니다. 음성 주문을 시작할 수 있습니다.", false);
-        } else if (status === "cancelled") {
-          preflightRequested = false;
         }
       });
 
@@ -1180,16 +1180,15 @@
       renderSetMenus();
       renderCart();
 
-      // 허용·텍스트 모드는 모달/getUserMedia를 다시 호출하지 않음 (반복 권한 요청 방지)
+      // 페이지 로드 중에는 권한을 요청하지 않는다. 사용자 버튼 클릭에서만 1회 확인한다.
       var preflightStatus = globalThis.AiVoicePreflight?.getStatus?.() || "";
-      if (preflightStatus === "granted" || globalThis.AiVoicePreflight?.isPersistentlyGranted?.()) {
-        setStatus("마이크가 허용되어 있습니다. 음성 주문을 시작해 주세요.", false);
-      } else if (preflightStatus !== "text" && !preflightRequested) {
-        preflightRequested = true;
-        globalThis.AiVoicePreflight?.request?.();
-      } else if (preflightStatus === "text") {
+      if (preflightStatus === "text") {
         micButton.disabled = true;
         setStatus("텍스트 주문 모드입니다. 아래 입력창을 이용해 주세요.", false);
+      } else if (preflightStatus === "granted" || globalThis.AiVoicePreflight?.isPersistentlyGranted?.()) {
+        setStatus("마이크가 허용되어 있습니다. 음성 주문을 시작해 주세요.", false);
+      } else {
+        setStatus("음성 주문 시작을 누르면 마이크 권한을 한 번 요청합니다.", false);
       }
     })();
   </script>

@@ -554,30 +554,12 @@
       useDefaultMiniRig();
     }
 
-    if (
-      action.id === "ai" &&
-      globalThis.AiVoicePreflight &&
-      typeof globalThis.AiVoicePreflight.request === "function"
-    ) {
-      var existing = typeof globalThis.AiVoicePreflight.getStatus === "function"
-        ? globalThis.AiVoicePreflight.getStatus()
-        : "";
-      var alreadyGranted = existing === "granted" ||
-        (typeof globalThis.AiVoicePreflight.isPersistentlyGranted === "function" &&
-          globalThis.AiVoicePreflight.isPersistentlyGranted());
-      if (alreadyGranted || existing === "text") {
-        setDismissed();
-        close();
-        globalThis.location.href = action.href;
-        return;
-      }
-      // 허브에서 1회만 권한 요청 → 상세 페이지에서 모달/getUserMedia 재호출 안 함
-      globalThis.AiVoicePreflight.request().then(function (status) {
-        if (status === "cancelled") return;
-        setDismissed();
-        close();
-        globalThis.location.href = action.href;
-      });
+    if (action.id === "ai") {
+      // 권한 요청은 상세 페이지의 '음성 주문 시작' 클릭 한 곳에서만 수행한다.
+      // 페이지 이동·로드 중 자동 요청하면 브라우저별로 권한창이 반복될 수 있다.
+      setDismissed();
+      close();
+      globalThis.location.href = action.href;
       return;
     }
 
