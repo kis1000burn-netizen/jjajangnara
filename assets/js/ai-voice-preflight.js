@@ -5,6 +5,17 @@
   var PERSIST_KEY = "jjajangnara-ai-mic-granted";
   var activePromise = null;
   var micUnlocked = false;
+  var ensurePromise = null;
+
+  function clearGrant() {
+    micUnlocked = false;
+    try {
+      globalThis.localStorage.removeItem(PERSIST_KEY);
+    } catch (_) {}
+    try {
+      globalThis.sessionStorage.removeItem(SESSION_KEY);
+    } catch (_) {}
+  }
 
   function saveStatus(status) {
     try {
@@ -16,20 +27,12 @@
       } catch (_) {}
       micUnlocked = true;
     }
+    if (status === "cancelled" || status === "text") {
+      // 거절/텍스트 모드는 세션만 유지. 영구 허용 플래그는 건드리지 않음
+    }
     globalThis.dispatchEvent(new CustomEvent("jjajang:voice-preflight", {
       detail: { status: status }
     }));
-  }
-
-  function getSavedStatus() {
-    try {
-      var session = globalThis.sessionStorage.getItem(SESSION_KEY) || "";
-      if (session) return session;
-    } catch (_) {}
-    try {
-      if (globalThis.localStorage.getItem(PERSIST_KEY) === "1") return "granted";
-    } catch (_) {}
-    return "";
   }
 
   function isPersistentlyGranted() {
@@ -37,6 +40,16 @@
       return globalThis.localStorage.getItem(PERSIST_KEY) === "1";
     } catch (_) {
       return false;
+    }
+  }
+
+  function getSavedStatus() {
+    // 영구 허용이 있으면 세션의 cancelled보다 우선 (모달 재등장 방지)
+    if (isPersistentlyGranted()) return "granted";
+    try {
+      return globalThis.sessionStorage.getItem(SESSION_KEY) || "";
+    } catch (_) {
+      return "";
     }
   }
 
@@ -59,38 +72,82 @@
     return navigator.permissions.query({ name: "microphone" }).then(function (result) {
       return result && result.state ? result.state : "";
     }).catch(function () {
+      // Firefox 등: microphone 쿼리 미지원
       return "";
     });
   }
 
-  /** 허용 후 실제 마이크 사용 가능하도록 1회 언락. 이미 언락이면 재요청 없음. */
+  function requestMicrophoneStream() {
+    return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      stream.getTracks().forEach(function (track) {
+        try {
+          track.stop();
+        } catch (_) {}
+      });
+      micUnlocked = true;
+      saveStatus("granted");
+      return true;
+    });
+  }
+
+  /**
+   * 마이크 사용 가능 여부 확인.
+   * - 브라우저가 이미 허용했거나 영구 허용이면 getUserMedia를 다시 호출하지 않음 (반복 프롬프트 방지)
+   * - 최초 1회만 OS 권한 창을 띄움
+   */
   function ensureMicrophoneAccess() {
-    if (micUnlocked && getSavedStatus() === "granted") {
+    if (micUnlocked && (getSavedStatus() === "granted" || isPersistentlyGranted())) {
       return Promise.resolve(true);
     }
+    if (ensurePromise) return ensurePromise;
+
     if (!supportsMicrophoneRequest()) {
-      return Promise.resolve(false);
+      // getUserMedia 없이도 SpeechRecognition이 자체 권한을 받을 수 있음
+      ensurePromise = Promise.resolve(supportsSpeechRecognition()).then(function (ok) {
+        ensurePromise = null;
+        if (ok && isPersistentlyGranted()) micUnlocked = true;
+        return ok;
+      });
+      return ensurePromise;
     }
-    return queryMicrophonePermission().then(function (state) {
-      if (state === "granted" || isPersistentlyGranted()) {
-        return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-          stream.getTracks().forEach(function (track) { track.stop(); });
-          micUnlocked = true;
-          saveStatus("granted");
-          return true;
-        }).catch(function () {
-          return false;
-        });
+
+    ensurePromise = queryMicrophonePermission().then(function (state) {
+      if (state === "denied") {
+        clearGrant();
+        return false;
       }
-      return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
-        stream.getTracks().forEach(function (track) { track.stop(); });
+
+      // 브라우저가 이미 허용 → 스트림 재요청 없이 통과 (반복 권한창 차단)
+      if (state === "granted") {
         micUnlocked = true;
         saveStatus("granted");
         return true;
-      }).catch(function () {
+      }
+
+      // 이전 방문에서 허용 기록이 있으면, 불필요한 getUserMedia 재호출 없이 통과
+      // (실제 거부 시 SpeechRecognition not-allowed에서 clearGrant 후 모달 재표시)
+      if (isPersistentlyGranted()) {
+        micUnlocked = true;
+        saveStatus("granted");
+        return true;
+      }
+
+      // 최초 1회만 OS 권한 요청
+      return requestMicrophoneStream().catch(function (error) {
+        if (error && error.name === "NotAllowedError") {
+          clearGrant();
+        }
         return false;
       });
+    }).then(function (ok) {
+      ensurePromise = null;
+      return ok;
+    }).catch(function () {
+      ensurePromise = null;
+      return false;
     });
+
+    return ensurePromise;
   }
 
   function removeModal() {
@@ -107,8 +164,8 @@
     }).then(function (permissionState) {
       var savedStatus = getSavedStatus();
 
-      // 이미 허용됨: 모달·권한 재요청 없이 통과 (기능은 ensureMicrophoneAccess로 보장)
       if (!options.force && (permissionState === "granted" || isPersistentlyGranted() || savedStatus === "granted")) {
+        micUnlocked = true;
         saveStatus("granted");
         activePromise = null;
         return "granted";
@@ -145,7 +202,7 @@
             '</div>' +
             '<div class="avp-error" id="aiVoicePreflightError" aria-live="polite"></div>' +
             '<div class="avp-actions">' +
-              (speechSupported && microphoneSupported
+              (speechSupported
                 ? '<button type="button" class="avp-primary" data-avp="allow">마이크 허용 · 음성 주문 준비</button>'
                 : "") +
               '<button type="button" class="avp-secondary" data-avp="text">텍스트 주문으로 계속</button>' +
@@ -183,9 +240,9 @@
           resolve(status);
         }
 
-        root.addEventListener("click", async function (event) {
+        root.addEventListener("click", function (event) {
           var button = event.target.closest("[data-avp]");
-          if (!button) return;
+          if (!button || button.disabled) return;
           var action = button.dataset.avp;
           if (action === "cancel") {
             finish("cancelled");
@@ -200,20 +257,30 @@
           var errorElement = root.querySelector("#aiVoicePreflightError");
           button.disabled = true;
           button.textContent = "마이크 권한 확인 중...";
-          try {
-            // 여기서 단 1회 OS 권한을 받고, 이후에는 재요청하지 않음
-            var stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            stream.getTracks().forEach(function (track) { track.stop(); });
-            micUnlocked = true;
+
+          var grantFlow = microphoneSupported
+            ? requestMicrophoneStream()
+            : Promise.resolve(supportsSpeechRecognition()).then(function (ok) {
+              if (!ok) throw new Error("unsupported");
+              micUnlocked = true;
+              saveStatus("granted");
+              return true;
+            });
+
+          grantFlow.then(function () {
             finish("granted");
-          } catch (error) {
+          }).catch(function (error) {
             button.disabled = false;
             button.textContent = "다시 마이크 권한 요청";
-            errorElement.textContent =
-              error && error.name === "NotAllowedError"
-                ? "마이크 권한이 거부되었습니다. 브라우저 주소창의 마이크를 허용한 뒤 다시 눌러 주세요."
-                : "마이크를 확인하지 못했습니다. 연결 상태를 확인하거나 텍스트 주문을 이용해 주세요.";
-          }
+            if (error && error.name === "NotAllowedError") {
+              clearGrant();
+              errorElement.textContent =
+                "마이크 권한이 거부되었습니다. 브라우저 주소창의 마이크 아이콘을 허용한 뒤 다시 눌러 주세요.";
+            } else {
+              errorElement.textContent =
+                "마이크를 확인하지 못했습니다. 연결 상태를 확인하거나 텍스트 주문을 이용해 주세요.";
+            }
+          });
         });
       });
     }).catch(function () {
@@ -224,8 +291,8 @@
     return activePromise;
   }
 
-  // 페이지 로드 시 영구 허용이면 세션에도 반영
   if (isPersistentlyGranted()) {
+    micUnlocked = true;
     try {
       globalThis.sessionStorage.setItem(SESSION_KEY, "granted");
     } catch (_) {}
@@ -237,6 +304,7 @@
     ensureMicrophoneAccess: ensureMicrophoneAccess,
     supportsSpeechRecognition: supportsSpeechRecognition,
     queryMicrophonePermission: queryMicrophonePermission,
-    isPersistentlyGranted: isPersistentlyGranted
+    isPersistentlyGranted: isPersistentlyGranted,
+    clearGrant: clearGrant
   };
 })();

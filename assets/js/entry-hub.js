@@ -562,12 +562,16 @@
       var existing = typeof globalThis.AiVoicePreflight.getStatus === "function"
         ? globalThis.AiVoicePreflight.getStatus()
         : "";
-      if (existing === "granted" || existing === "text") {
+      var alreadyGranted = existing === "granted" ||
+        (typeof globalThis.AiVoicePreflight.isPersistentlyGranted === "function" &&
+          globalThis.AiVoicePreflight.isPersistentlyGranted());
+      if (alreadyGranted || existing === "text") {
         setDismissed();
         close();
         globalThis.location.href = action.href;
         return;
       }
+      // 허브에서 1회만 권한 요청 → 상세 페이지에서 모달/getUserMedia 재호출 안 함
       globalThis.AiVoicePreflight.request().then(function (status) {
         if (status === "cancelled") return;
         setDismissed();
