@@ -28,7 +28,6 @@ function sanitizePublicError(error) {
     code: error.code || "ORDER_CREATE_FAILED",
   };
   if (error.payload && typeof error.payload === "object") {
-    // 재시도 응답에도 토큰·주소·전화번호는 절대 포함하지 않는다.
     const allowed = ["orderId", "status", "amount", "orderName", "expiresAt", "currency", "replay"];
     for (const key of allowed) {
       if (Object.prototype.hasOwnProperty.call(error.payload, key)) {
@@ -37,6 +36,19 @@ function sanitizePublicError(error) {
     }
   }
   return body;
+}
+
+function publicSuccessBody(created) {
+  return {
+    orderId: created.orderId,
+    status: created.status,
+    amount: created.amount,
+    orderName: created.orderName,
+    checkoutToken: created.checkoutToken,
+    expiresAt: created.expiresAt,
+    currency: created.currency,
+    ...(created.replay ? { replay: true } : {}),
+  };
 }
 
 exports.handler = async function (event) {
@@ -48,7 +60,6 @@ exports.handler = async function (event) {
     return json(405, { message: "Method Not Allowed", code: "METHOD_NOT_ALLOWED" });
   }
 
-  // fail-closed: 서버 플래그 OFF면 주문 생성 API 자체를 닫는다.
   if (!isRc1Enabled()) {
     return json(503, {
       message: "RC1 서버 주문 기능이 비활성화되어 있습니다.",
@@ -68,10 +79,10 @@ exports.handler = async function (event) {
       idempotencyKey: String(idempotencyKey || "").trim(),
     });
 
-    return json(201, created);
+    const statusCode = created.replay ? 200 : 201;
+    return json(statusCode, publicSuccessBody(created));
   } catch (error) {
     const statusCode = Number(error.statusCode) || 500;
-    // 주소·전화번호·토큰은 로그에 남기지 않는다.
     console.log("create-order failed:", error.code || "ERROR", statusCode);
     return json(statusCode, sanitizePublicError(error));
   }

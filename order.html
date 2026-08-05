@@ -1421,9 +1421,40 @@
     });
   }
 
+  function buildRc1CheckoutDigest(orderMeta, items){
+    const payload = {
+      items,
+      utensils: orderMeta.utensils || "O",
+      address: String(orderMeta.address || "").trim(),
+      phone: String(orderMeta.phone || "").replace(/\D/g, ""),
+      request: String(orderMeta.request || "없음").trim() || "없음",
+    };
+    return JSON.stringify(payload);
+  }
+
+  function getOrCreateClientRequestId(digest){
+    const storageKey = "jjajangnara-rc1-checkout-attempt";
+    try{
+      const prev = JSON.parse(globalThis.sessionStorage.getItem(storageKey) || "null");
+      if(prev && prev.digest === digest && typeof prev.clientRequestId === "string" && prev.clientRequestId.length >= 8){
+        return prev.clientRequestId;
+      }
+    }catch(_error){
+      // ignore
+    }
+    const clientRequestId = `web_${crypto.randomUUID()}`;
+    globalThis.sessionStorage.setItem(
+      storageKey,
+      JSON.stringify({ digest, clientRequestId, savedAt: new Date().toISOString() })
+    );
+    return clientRequestId;
+  }
+
   async function createServerPendingOrder(orderMeta){
     const items = buildRc1ItemsFromCart(orderMeta.cart);
-    const clientRequestId = `web_${crypto.randomUUID()}`;
+    const digest = buildRc1CheckoutDigest(orderMeta, items);
+    // 동일 장바구니·주소면 재클릭/응답 유실 재시도에 같은 clientRequestId 재사용
+    const clientRequestId = getOrCreateClientRequestId(digest);
     const response = await fetch("/.netlify/functions/create-order", {
       method: "POST",
       headers: {
@@ -1445,6 +1476,7 @@
       const code = result.code ? ` [${result.code}]` : "";
       throw new Error((result.message || "서버 주문 생성에 실패했습니다.") + code);
     }
+    // 201 신규 · 200 재개(replay) 모두 허용 — checkoutToken 필수
     if(!result.orderId || !result.checkoutToken || !(Number(result.amount) > 0)){
       throw new Error("서버 주문 응답이 올바르지 않습니다.");
     }

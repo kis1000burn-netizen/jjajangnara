@@ -1,5 +1,6 @@
 /**
  * RC1 Slice 1 — 서버 권위 주문 생성 (가격 재계산 + PAYMENT_PENDING)
+ * Remediation: 원자적 멱등 클레임, digest 충돌 거절, HMAC checkout 재개, 레거시 fail-closed 지원
  */
 "use strict";
 
@@ -10,6 +11,9 @@ const catalog = require("./_menu-catalog");
 const STORE_NAME = "jjajangnara-pos-orders";
 const RC1_PENDING_PREFIX = "rc1-pending/";
 const RC1_IDEMPOTENCY_PREFIX = "rc1-idempotency/";
+const IDEMPOTENCY_KEY_RE = /^[a-zA-Z0-9._:-]{8,128}$/;
+const CLAIM_WAIT_MS = 50;
+const CLAIM_WAIT_ATTEMPTS = 40;
 
 function getOrderStore(event) {
   connectLambda(event);
@@ -17,15 +21,31 @@ function getOrderStore(event) {
 }
 
 function rc1PendingKey(orderId) {
-  return `${RC1_PENDING_PREFIX}${String(orderId).replace(/[^a-zA-Z0-9_-]/g, "")}`;
+  const safe = String(orderId || "");
+  if (!/^jjn_[a-f0-9]{32}$/.test(safe)) {
+    throw HttpError(400, "orderId 형식이 올바르지 않습니다.", "INVALID_ORDER_ID");
+  }
+  return `${RC1_PENDING_PREFIX}${safe}`;
 }
 
 function rc1IdempotencyKey(key) {
-  const safe = String(key || "")
-    .trim()
-    .slice(0, 120)
-    .replace(/[^a-zA-Z0-9._:-]/g, "_");
-  return `${RC1_IDEMPOTENCY_PREFIX}${safe}`;
+  // 검증된 키만 사용. 잘라내거나 _ 치환으로 서로 다른 키를 합치지 않는다.
+  return `${RC1_IDEMPOTENCY_PREFIX}${key}`;
+}
+
+function assertValidIdempotencyKey(raw) {
+  const key = String(raw || "").trim();
+  if (!key) {
+    throw HttpError(400, "Idempotency-Key / clientRequestId가 필요합니다.", "MISSING_IDEMPOTENCY_KEY");
+  }
+  if (!IDEMPOTENCY_KEY_RE.test(key)) {
+    throw HttpError(
+      400,
+      "Idempotency-Key 형식이 올바르지 않습니다.",
+      "INVALID_IDEMPOTENCY_KEY"
+    );
+  }
+  return key;
 }
 
 function isRc1Enabled() {
@@ -34,11 +54,32 @@ function isRc1Enabled() {
 }
 
 function createOrderId() {
-  // 충분히 무작위 — 추측 가능한 Date.now 기반 ID 금지
   return `jjn_${crypto.randomBytes(16).toString("hex")}`;
 }
 
+function resolveCheckoutSecret(options) {
+  if (options && options.checkoutSecret) {
+    return String(options.checkoutSecret);
+  }
+  const fromEnv = String(process.env.RC1_CHECKOUT_SECRET || "").trim();
+  if (fromEnv) return fromEnv;
+  // 테스트 force 경로에서도 결정적 재개를 위해 고정 시드를 쓰지 않고 실패시킨다.
+  // 운영에서는 RC1_CHECKOUT_SECRET 필수.
+  throw HttpError(
+    503,
+    "RC1_CHECKOUT_SECRET이 설정되지 않아 주문을 생성할 수 없습니다.",
+    "CHECKOUT_SECRET_MISSING"
+  );
+}
+
+/** 서버 비밀 기반 결정적 토큰 — 원문 저장 없이 재발급 가능 */
+function mintCheckoutToken(orderId, version, secret) {
+  const msg = `jjn.checkout.v1|${orderId}|${Number(version) || 1}`;
+  return crypto.createHmac("sha256", secret).update(msg).digest("base64url");
+}
+
 function createCheckoutToken() {
+  // 레거시 테스트 호환 — 무작위 토큰 (HMAC 경로가 기본)
   return crypto.randomBytes(32).toString("base64url");
 }
 
@@ -56,7 +97,6 @@ function HttpError(statusCode, message, code) {
 function assertNoClientAuthorityFields(body) {
   if (!body || typeof body !== "object") return;
 
-  // 가격·합계·메뉴명뿐 아니라 서버 권위 필드도 클라이언트가 지정할 수 없다.
   const topForbidden = [
     "price",
     "total",
@@ -107,11 +147,58 @@ function assertNoClientAuthorityFields(body) {
   }
 }
 
-/** @deprecated use assertNoClientAuthorityFields */
 function assertNoClientPrices(body) {
   return assertNoClientAuthorityFields(body);
 }
 
+function stableStringify(value) {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    return `[${value.map((entry) => stableStringify(entry)).join(",")}]`;
+  }
+  const keys = Object.keys(value).sort();
+  return `{${keys.map((key) => `${JSON.stringify(key)}:${stableStringify(value[key])}`).join(",")}}`;
+}
+
+function normalizeItemsForDigest(items) {
+  if (!Array.isArray(items)) return [];
+  return items.map((item) => {
+    if (item.setId) {
+      return {
+        setId: String(item.setId || "").trim(),
+        quantity: Number(item.quantity == null ? 1 : item.quantity),
+        mains: Array.isArray(item.mains)
+          ? item.mains.map((main) => ({
+              mainId: String(main?.mainId || "").trim(),
+              optionIds: uniqueOptionIds(main?.optionIds).slice().sort(),
+            }))
+          : [],
+      };
+    }
+    return {
+      menuId: String(item.menuId || "").trim(),
+      quantity: Number(item.quantity),
+      optionIds: uniqueOptionIds(item.optionIds).slice().sort(),
+    };
+  });
+}
+
+function buildRequestDigest(parts) {
+  const payload = {
+    items: normalizeItemsForDigest(parts.items),
+    utensils: String(parts.utensils || "O").trim().slice(0, 10) || "O",
+    address: String(parts.address || "").trim(),
+    phone: String(parts.phone || "").replace(/\D/g, ""),
+    request: String(parts.request || "없음").trim().slice(0, 500) || "없음",
+  };
+  return crypto.createHash("sha256").update(stableStringify(payload)).digest("hex");
+}
+
+/**
+ * 동시성 안전 메모리 스토어 — onlyIfNew 체크와 set이 await 없이 한 틱에서 완료된다.
+ */
 function createMemoryStore(seed) {
   const map = new Map();
   if (seed && typeof seed === "object") {
@@ -128,10 +215,36 @@ function createMemoryStore(seed) {
       }
       return value;
     },
-    async setJSON(key, value) {
+    async setJSON(key, value, opts) {
+      opts = opts || {};
+      if (opts.onlyIfNew && map.has(key)) {
+        return { modified: false };
+      }
       map.set(key, JSON.parse(JSON.stringify(value)));
+      return { modified: true };
+    },
+    /** 테스트용: pending 키 개수 */
+    _keys() {
+      return [...map.keys()];
     },
   };
+}
+
+async function setJsonIfNew(store, key, value) {
+  if (typeof store.setJSON !== "function") {
+    throw HttpError(500, "스토어가 setJSON을 지원하지 않습니다.", "STORE_UNSUPPORTED");
+  }
+  const result = await store.setJSON(key, value, { onlyIfNew: true });
+  if (result && typeof result.modified === "boolean") {
+    return result.modified;
+  }
+  // 구형 스토어가 onlyIfNew를 무시하고 덮어쓴 경우 — 재조회로 검증
+  const current = await store.get(key, { type: "json" });
+  return stableStringify(current) === stableStringify(value);
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function normalizePhone(phone) {
@@ -310,8 +423,8 @@ function buildOrderName(pricedItems) {
   return `${label} 외 ${pricedItems.length - 1}건`.slice(0, 100);
 }
 
-function publicOrderView(record, checkoutToken) {
-  return {
+function publicOrderView(record, checkoutToken, extra) {
+  const view = {
     orderId: record.orderId,
     status: record.status,
     amount: record.amount,
@@ -320,6 +433,42 @@ function publicOrderView(record, checkoutToken) {
     expiresAt: record.expiresAt,
     currency: record.currency,
   };
+  if (extra && extra.replay) {
+    view.replay = true;
+  }
+  if (extra && extra.created) {
+    view.created = true;
+  }
+  return view;
+}
+
+async function loadPayableOrder(store, orderId) {
+  const record = await store.get(rc1PendingKey(orderId), { type: "json" });
+  return assertOrderPayable(record);
+}
+
+async function resumeExistingOrder(store, orderId, secret, extra) {
+  const record = await loadPayableOrder(store, orderId);
+  const token = mintCheckoutToken(record.orderId, record.version, secret);
+  if (!verifyCheckoutToken(record, token)) {
+    throw HttpError(500, "체크아웃 토큰 재발급에 실패했습니다.", "TOKEN_RESUME_FAILED");
+  }
+  return publicOrderView(record, token, { replay: true, ...(extra || {}) });
+}
+
+async function waitForClaimedOrder(store, orderId, secret) {
+  for (let attempt = 0; attempt < CLAIM_WAIT_ATTEMPTS; attempt += 1) {
+    const record = await store.get(rc1PendingKey(orderId), { type: "json" });
+    if (record && record.status === "PAYMENT_PENDING") {
+      if (record.expiresAt && Date.parse(record.expiresAt) <= Date.now()) {
+        throw HttpError(409, "만료된 주문입니다.", "ORDER_EXPIRED");
+      }
+      const token = mintCheckoutToken(record.orderId, record.version, secret);
+      return publicOrderView(record, token, { replay: true });
+    }
+    await sleep(CLAIM_WAIT_MS);
+  }
+  throw HttpError(503, "동일 주문 생성 처리 중입니다. 잠시 후 다시 시도해 주세요.", "ORDER_CLAIM_PENDING");
 }
 
 async function createPaymentPendingOrder(event, body, options) {
@@ -330,35 +479,22 @@ async function createPaymentPendingOrder(event, body, options) {
 
   assertNoClientAuthorityFields(body);
 
-  const clientRequestId = String(body.clientRequestId || options.idempotencyKey || "").trim();
+  const clientRequestId = assertValidIdempotencyKey(body.clientRequestId || options.idempotencyKey);
   const store = options.store || getOrderStore(event);
+  const secret = resolveCheckoutSecret(options);
 
-  if (clientRequestId) {
-    const existingRef = await store.get(rc1IdempotencyKey(clientRequestId), { type: "json" });
-    if (existingRef?.orderId) {
-      const existing = await store.get(rc1PendingKey(existingRef.orderId), { type: "json" });
-      if (existing && existing.status === "PAYMENT_PENDING") {
-        if (existing.expiresAt && Date.parse(existing.expiresAt) <= Date.now()) {
-          throw HttpError(409, "만료된 주문입니다. 다시 생성해 주세요.", "ORDER_EXPIRED");
-        }
-        const replayError = HttpError(
-          409,
-          "동일 요청이 이미 처리되었습니다. 기존 주문을 사용하세요.",
-          "IDEMPOTENT_REPLAY"
-        );
-        replayError.payload = {
-          orderId: existing.orderId,
-          status: existing.status,
-          amount: existing.amount,
-          orderName: existing.orderName,
-          expiresAt: existing.expiresAt,
-          currency: existing.currency,
-          replay: true,
-        };
-        throw replayError;
-      }
-    }
-  }
+  const utensils = String(body.utensils || "O").trim().slice(0, 10) || "O";
+  const phone = normalizePhone(body.phone);
+  const address = normalizeAddress(body.address);
+  const request = String(body.request || "없음").trim().slice(0, 500) || "없음";
+
+  const digest = buildRequestDigest({
+    items: body.items,
+    utensils,
+    address,
+    phone,
+    request,
+  });
 
   const pricedItems = priceItems(body.items);
   const amount = pricedItems.reduce((sum, item) => sum + item.lineTotal, 0);
@@ -370,14 +506,39 @@ async function createPaymentPendingOrder(event, body, options) {
     );
   }
 
-  const utensils = String(body.utensils || "O").trim().slice(0, 10) || "O";
-  const phone = normalizePhone(body.phone);
-  const address = normalizeAddress(body.address);
-  const request = String(body.request || "없음").trim().slice(0, 500) || "없음";
-
+  const idemKey = rc1IdempotencyKey(clientRequestId);
   const orderId = createOrderId();
-  const checkoutToken = createCheckoutToken();
   const now = new Date();
+  const claim = {
+    state: "claimed",
+    digest,
+    orderId,
+    createdAt: now.toISOString(),
+  };
+
+  const claimed = await setJsonIfNew(store, idemKey, claim);
+
+  if (!claimed) {
+    const existingRef = await store.get(idemKey, { type: "json" });
+    if (!existingRef || !existingRef.orderId) {
+      throw HttpError(409, "멱등 원장이 손상되었습니다.", "IDEMPOTENCY_CORRUPT");
+    }
+    if (existingRef.digest && existingRef.digest !== digest) {
+      throw HttpError(
+        409,
+        "동일 Idempotency-Key로 다른 주문 내용이 이미 등록되어 있습니다.",
+        "IDEMPOTENCY_CONFLICT"
+      );
+    }
+    if (existingRef.state === "ready") {
+      return resumeExistingOrder(store, existingRef.orderId, secret);
+    }
+    // 다른 요청이 클레임 보유 — 동일 digest면 그 orderId로 수렴
+    return waitForClaimedOrder(store, existingRef.orderId, secret);
+  }
+
+  const version = 1;
+  const checkoutToken = mintCheckoutToken(orderId, version, secret);
   const expiresAt = new Date(now.getTime() + catalog.ORDER_TTL_MS).toISOString();
 
   const record = {
@@ -391,13 +552,13 @@ async function createPaymentPendingOrder(event, body, options) {
     address,
     phone,
     request,
-    // 원문 토큰은 저장하지 않는다. 해시만 보관.
+    requestDigest: digest,
     checkoutTokenHash: hashToken(checkoutToken),
-    clientRequestId: clientRequestId || null,
+    clientRequestId,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
     expiresAt,
-    version: 1,
+    version,
     source: "rc1-create-order",
   };
 
@@ -405,20 +566,30 @@ async function createPaymentPendingOrder(event, body, options) {
     throw HttpError(500, "토큰 원문 저장이 감지되어 주문을 중단합니다.", "TOKEN_PLAINTEXT_FORBIDDEN");
   }
 
-  await store.setJSON(rc1PendingKey(orderId), record);
-  if (clientRequestId) {
-    await store.setJSON(rc1IdempotencyKey(clientRequestId), {
-      orderId,
-      createdAt: record.createdAt,
-    });
+  const pendingCreated = await setJsonIfNew(store, rc1PendingKey(orderId), record);
+  if (!pendingCreated) {
+    // orderId 충돌 — 기존 원장을 덮어쓰지 않고 실패. 클레임은 이미 점유됨.
+    throw HttpError(500, "주문번호 충돌로 생성을 중단했습니다.", "ORDER_ID_COLLISION");
   }
 
-  return publicOrderView(record, checkoutToken);
+  // 멱등 원장을 ready로 확정 (동일 키 덮어쓰기 — 클레임 소유자만 도달)
+  await store.setJSON(idemKey, {
+    state: "ready",
+    digest,
+    orderId,
+    createdAt: record.createdAt,
+  });
+
+  return publicOrderView(record, checkoutToken, { created: true });
 }
 
-async function getRc1PendingOrder(event, orderId) {
-  const store = getOrderStore(event);
-  return store.get(rc1PendingKey(orderId), { type: "json" });
+async function getRc1PendingOrder(event, orderId, options) {
+  const store = (options && options.store) || getOrderStore(event);
+  const safe = String(orderId || "");
+  if (!/^jjn_[a-f0-9]{32}$/.test(safe)) {
+    return null;
+  }
+  return store.get(`${RC1_PENDING_PREFIX}${safe}`, { type: "json" });
 }
 
 function verifyCheckoutToken(record, token) {
@@ -426,7 +597,11 @@ function verifyCheckoutToken(record, token) {
   const expected = String(record.checkoutTokenHash || "");
   const actual = hashToken(token);
   if (!expected || expected.length !== actual.length) return false;
-  return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(actual));
+  try {
+    return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(actual));
+  } catch {
+    return false;
+  }
 }
 
 function assertOrderPayable(record) {
@@ -447,6 +622,8 @@ module.exports = {
   assertNoClientAuthorityFields,
   assertNoClientPrices,
   assertOrderPayable,
+  assertValidIdempotencyKey,
+  buildRequestDigest,
   createCheckoutToken,
   createMemoryStore,
   createOrderId,
@@ -454,9 +631,11 @@ module.exports = {
   getRc1PendingOrder,
   hashToken,
   isRc1Enabled,
+  mintCheckoutToken,
   priceItems,
   publicOrderView,
   rc1IdempotencyKey,
   rc1PendingKey,
+  setJsonIfNew,
   verifyCheckoutToken,
 };
